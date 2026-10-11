@@ -1,10 +1,10 @@
 // Directional focus navigation for the Neural Band / touchpad D-pad.
 //
-// Mirrors the approach Meta's own UI Toolkit FocusNavigationProvider uses: a single
-// document-level keydown handler that moves focus to the nearest visible control in
-// the pressed direction and calls preventDefault so the host does not move twice.
-// Pinch / Select arrives as a normal click on the focused <button>, so nothing here
-// synthesizes clicks.
+// Mirrors Meta's UI Toolkit FocusNavigationProvider: one document-level keydown
+// handler moves focus to the nearest visible control in the pressed direction and
+// calls preventDefault so the host does not move twice. If focus has fallen back to
+// the page itself, the first press lands on the screen's default control.
+// Pinch normally arrives as a click on the focused <button>.
 
 const FOCUSABLE =
   'button:not([disabled]),a[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
@@ -142,27 +142,105 @@ export function setEdgeHandler(h: EdgeHandler | null): void {
   edgeHandler = h;
 }
 
+// Legacy key names and raw key codes, in case the host sends either.
+const CODE_DIR: Record<number, Dir> = {38: 'up', 40: 'down', 37: 'left', 39: 'right', 19: 'up', 20: 'down', 21: 'left', 22: 'right'};
+const dirOf = (e: KeyboardEvent): Dir | undefined => KEY_DIR[e.key] ?? CODE_DIR[e.keyCode];
+const isEnter = (e: KeyboardEvent) => e.key === 'Enter' || e.key === 'Select' || e.keyCode === 13 || e.keyCode === 23;
+const isBack = (e: KeyboardEvent) => e.key === 'Escape' || e.key === 'GoBack' || e.key === 'BrowserBack' || e.keyCode === 27;
+
+function navigate(dir: Dir) {
+  const from = document.activeElement as HTMLElement | null;
+  // 1) same row/column, 2) screen-specific edge behaviour (page flips), 3) anything that way.
+  if (moveFocus(dir, 'aligned')) return;
+  if (edgeHandler && edgeHandler(dir, from)) return;
+  moveFocus(dir, 'any');
+}
+
+/** Is focus sitting on nothing useful (document, body, the app root)? */
+export function focusIsLost(): boolean {
+  const a = document.activeElement as HTMLElement | null;
+  if (!a || a === document.body || a === document.documentElement) return true;
+  const scope = activeScope();
+  return !scope || a === scope || !scope.contains(a);
+}
+
 /** Install the global handler. Returns a cleanup function. */
 export function installSpatialNav(onEscape: () => void): () => void {
+  let lastSynth: {el: Element; at: number} | null = null;
+  let lastFocusChange = -Infinity;
+
   const onKey = (e: KeyboardEvent) => {
-    if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey) return;
-    const dir = KEY_DIR[e.key];
+    const dir = dirOf(e);
     if (dir) {
       const target = e.target as HTMLElement | null;
       if (target && /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName)) return;
+      if (e.defaultPrevented) {
+        // Something upstream (e.g. the glasses browser) claimed this press. Only step
+        // in if focus did not change at all since the press, so it never moves twice.
+        const pressedAt = e.timeStamp;
+        setTimeout(() => {
+          if (lastFocusChange < pressedAt) navigate(dir);
+        }, 40);
+        return;
+      }
       e.preventDefault();
-      const from = document.activeElement as HTMLElement | null;
-      // 1) same row/column, 2) screen-specific edge behaviour (page flips), 3) anything that way.
-      if (moveFocus(dir, 'aligned')) return;
-      if (edgeHandler && edgeHandler(dir, from)) return;
-      moveFocus(dir, 'any');
+      navigate(dir);
       return;
     }
-    if (e.key === 'Escape' || e.key === 'Backspace' || e.key === 'BrowserBack') {
+    if (isEnter(e) && !e.defaultPrevented) {
+      // Real Enter presses activate buttons natively. A synthesized one (isTrusted
+      // false) does not, so press the focused control ourselves.
+      if (focusIsLost()) {
+        e.preventDefault();
+        focusDefault();
+        return;
+      }
+      const el = document.activeElement as HTMLElement;
+      if (!e.isTrusted && typeof el.click === 'function') {
+        e.preventDefault();
+        lastSynth = {el, at: performance.now()};
+        el.click();
+      }
+      return;
+    }
+    if (isBack(e) && !e.defaultPrevented) {
       e.preventDefault();
       onEscape();
     }
   };
+
+  // If we synthesized a click, swallow a duplicate the host may fire right after.
+  const onClick = (e: MouseEvent) => {
+    if (!lastSynth || !e.isTrusted) return; // our own el.click() passes through here first
+    const dup = performance.now() - lastSynth.at < 300 && e.target instanceof Node && lastSynth.el.contains(e.target);
+    if (dup && e.isTrusted) {
+      e.stopImmediatePropagation();
+      e.preventDefault();
+    }
+    lastSynth = null;
+  };
+
+  // When the page becomes active (glasses wake, app switch), make sure a control has focus.
+  const recover = () => {
+    if (!document.hidden && focusIsLost()) requestAnimationFrame(() => focusIsLost() && focusDefault());
+  };
+
+  const onFocusIn = () => {
+    lastFocusChange = performance.now();
+  };
+
+  document.addEventListener('focusin', onFocusIn, true);
   document.addEventListener('keydown', onKey);
-  return () => document.removeEventListener('keydown', onKey);
+  document.addEventListener('click', onClick, true);
+  window.addEventListener('focus', recover);
+  window.addEventListener('pageshow', recover);
+  document.addEventListener('visibilitychange', recover);
+  return () => {
+    document.removeEventListener('focusin', onFocusIn, true);
+    document.removeEventListener('keydown', onKey);
+    document.removeEventListener('click', onClick, true);
+    window.removeEventListener('focus', recover);
+    window.removeEventListener('pageshow', recover);
+    document.removeEventListener('visibilitychange', recover);
+  };
 }

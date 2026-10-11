@@ -40,8 +40,13 @@ await key('ArrowRight', 1, 400);
 check('Right off edge → page 2, first tile', (await focused()) === 'Play Wheel', await focused());
 await key('ArrowLeft', 1, 400);
 check('Left off edge → back to page 1 last tile', (await focused()) === 'Play Keno', await focused());
-await key('ArrowDown', 1, 400);
-check('Down off bottom → next page', (await focused()) === 'Play Wheel', await focused());
+await key('ArrowDown', 1, 300);
+check('Down from bottom row → Next page button', (await focused()) === 'Next page', await focused());
+await key('Enter', 1, 400);
+check('Next page button flips to page 2', !!(await page.$('[data-game="wheel"]')));
+await key('ArrowUp', 1, 200);
+await key('ArrowLeft', 3, 150);
+check('Navigate to Wheel', (await focused()) === 'Play Wheel', await focused());
 
 // Open Wheel, spin with pinch, go Back mid-spin: bet must still settle.
 const before = await balance();

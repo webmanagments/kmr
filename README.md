@@ -20,8 +20,11 @@ Rounds in progress (Mines, Towers, HiLo, Pump, Coinflip streaks, Blackjack, Vide
 | Neural Band pinch / touchpad double-tap | Press the focused button |
 | Back | Close Wallet, leave a game, then exit the app |
 
-In the lobby, swiping past the right or bottom edge of the grid flips to the next page; swiping past the left edge flips back.
+In the lobby, use the **‹ Prev / More ›** buttons under the grid to change pages (swiping past the grid's right edge also flips forward).
 In a desktop browser: arrow keys = swipe, Enter = pinch, Esc = back.
+
+**Troubleshooting:** add `?debug` to the link (`https://webmanagments.github.io/kmr/?debug`) to show a live readout of
+exactly what input the glasses send.
 
 ## Put it on your glasses (works from a Chromebook)
 

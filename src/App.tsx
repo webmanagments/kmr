@@ -1,7 +1,7 @@
 import {Suspense, useCallback, useEffect, useLayoutEffect, useRef, useState} from 'react';
 import {CATEGORIES, GAMES, gameComponent, gameName} from './games/registry';
 import {GameArt} from './games/art';
-import {focusDefault, focusEl, installSpatialNav, setEdgeHandler} from './lib/spatial';
+import {focusDefault, focusEl, focusIsLost, installSpatialNav, setEdgeHandler} from './lib/spatial';
 import {DAILY_BONUS, setToaster, toast, useWallet, wallet} from './lib/wallet';
 import {fmtCoins, fmtMult} from './lib/util';
 import {Chart, Coin, Gift, Refresh, Trophy, WalletIcon} from './ui/icons';
@@ -13,6 +13,23 @@ interface Nav {
 }
 
 const HOME: Nav = {screen: 'lobby'};
+
+/** Apply focus on the next frame, then re-apply shortly after only if it was lost. */
+function settleFocus(apply: () => void) {
+  requestAnimationFrame(apply);
+  for (const ms of [160, 450]) setTimeout(() => focusIsLost() && apply(), ms);
+}
+
+/** History calls can throw in locked-down web views; never let that break the app. */
+function safeHistory(kind: 'push' | 'replace', state: Nav): boolean {
+  try {
+    if (kind === 'push') history.pushState(state, '');
+    else history.replaceState(state, '');
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 interface Toast {
   id: number;
@@ -30,9 +47,7 @@ export default function App() {
 
   // History is the source of truth for Back: the glasses shell calls history.back().
   useEffect(() => {
-    history.replaceState(HOME, '');
-    const onPop = (e: PopStateEvent) => setNav((e.state as Nav | null) ?? HOME);
-    window.addEventListener('popstate', onPop);
+    // Input first, so nothing below can stop the Neural Band from working.
     const uninstall = installSpatialNav(() => {
       const n = navRef.current;
       if (n.modal) {
@@ -46,8 +61,11 @@ export default function App() {
         // Park focus on a control that survives the screen change; the lobby then refocuses the tile.
         focusEl(document.querySelector<HTMLElement>('.wallet-btn'));
         history.back();
-      } else if (!document.activeElement || document.activeElement === document.body) focusDefault();
+      } else if (focusIsLost()) focusDefault();
     });
+    safeHistory('replace', HOME);
+    const onPop = (e: PopStateEvent) => setNav((e.state as Nav | null) ?? HOME);
+    window.addEventListener('popstate', onPop);
     return () => {
       window.removeEventListener('popstate', onPop);
       uninstall();
@@ -66,7 +84,7 @@ export default function App() {
   const openGame = useCallback((id: string) => {
     lastGame.current = id;
     const next: Nav = {screen: 'game', id};
-    history.pushState(next, '');
+    safeHistory('push', next);
     setNav(next);
   }, []);
 
@@ -74,28 +92,29 @@ export default function App() {
     if (navRef.current.modal) return;
     modalOpener.current = document.activeElement as HTMLElement | null;
     const next: Nav = {...navRef.current, modal: 'wallet'};
-    history.pushState(next, '');
+    safeHistory('push', next);
     setNav(next);
   }, []);
 
-  // Focus follows navigation.
+  // Focus follows navigation. The glasses browser can reset focus to the page itself
+  // around a navigation, so the target is re-applied a couple of times if it was lost.
   const prev = useRef<Nav>(HOME);
   useLayoutEffect(() => {
     const before = prev.current;
     prev.current = nav;
     if (nav.modal && !before.modal) {
-      requestAnimationFrame(() => focusDefault());
+      settleFocus(() => focusDefault());
       return;
     }
     if (!nav.modal && before.modal) {
       const opener = modalOpener.current;
-      requestAnimationFrame(() => {
+      settleFocus(() => {
         if (!(opener && opener.isConnected && focusEl(opener))) focusDefault();
       });
       return;
     }
     if (nav.screen === 'lobby' && before.screen === 'game') {
-      requestAnimationFrame(() => {
+      settleFocus(() => {
         const tile = document.querySelector<HTMLElement>(`[data-game="${lastGame.current}"]`);
         if (!focusEl(tile)) focusDefault();
       });
@@ -103,7 +122,7 @@ export default function App() {
   }, [nav]);
 
   useEffect(() => {
-    requestAnimationFrame(() => focusDefault());
+    settleFocus(() => focusDefault());
   }, []);
 
   const inGame = nav.screen === 'game' && nav.id;
@@ -196,6 +215,8 @@ function Lobby({onOpen, onWallet}: {onOpen: (id: string) => void; onWallet: () =
         const tiles = document.querySelectorAll<HTMLElement>('.tiles .tile');
         focusEl(focus === 'first' ? tiles[0] : tiles[tiles.length - 1]);
       });
+    // A pager button that just became disabled drops focus; hand it to the other one.
+    else requestAnimationFrame(() => focusIsLost() && focusEl(document.querySelector<HTMLElement>('.pager-btn:not(:disabled)')));
     return true;
   };
 
@@ -283,16 +304,21 @@ function Lobby({onOpen, onWallet}: {onOpen: (id: string) => void; onWallet: () =
         ))}
       </div>
 
-      <div className="pager" aria-hidden="true">
-        <span className="pager-dots">
+      <div className="pager">
+        <span className="pager-dots" aria-hidden="true">
           {PAGES.map((p, i) => (
             <i key={i} className={`${i === page ? 'is-on' : ''}${p.cat !== current.cat ? ' is-other' : ''}`} />
           ))}
         </span>
-        <span className="pager-hint">
-          {page < PAGES.length - 1
-            ? `More ▶ ${catPages.length > 1 && current.index < current.of - 1 ? 'page ' + (current.index + 2) : CATEGORIES.find(c => c.id === PAGES[page + 1].cat)?.name}`
-            : '◀ Back to start'}
+        <span className="pager-btns">
+          <button type="button" className="pager-btn" onClick={() => setPage(page - 1, null)} disabled={page === 0} aria-label="Previous page">
+            ‹ Prev
+          </button>
+          <button type="button" className="pager-btn" onClick={() => setPage(page + 1, null)} disabled={page === PAGES.length - 1} aria-label="Next page">
+            {page < PAGES.length - 1
+              ? `${catPages.length > 1 && current.index < current.of - 1 ? 'More' : CATEGORIES.find(c => c.id === PAGES[page + 1].cat)?.name} ›`
+              : 'Next ›'}
+          </button>
         </span>
       </div>
     </div>
@@ -320,7 +346,7 @@ function GameScreen({id}: {id: string}) {
 
 function FocusOnMount({children}: {children: React.ReactNode}) {
   useEffect(() => {
-    requestAnimationFrame(() => focusDefault());
+    settleFocus(() => focusDefault());
   }, []);
   return <>{children}</>;
 }
