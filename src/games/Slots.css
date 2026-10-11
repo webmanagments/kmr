@@ -1,0 +1,110 @@
+.slots {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  height: 100%;
+}
+
+.slot-frame {
+  padding: 8px;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #ff4f7a, #7e22ce);
+  box-shadow: 0 6px 18px rgba(126, 34, 206, 0.35);
+}
+
+.slot-window {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  height: 252px;
+  padding: 6px;
+  border-radius: 9px;
+  background: #0a0f1a;
+  overflow: hidden;
+}
+
+.slot-reel {
+  position: relative;
+  overflow: hidden;
+  border-radius: 6px;
+  background: linear-gradient(180deg, #e8eef5 0%, #ffffff 50%, #e8eef5 100%);
+}
+
+.slot-strip {
+  display: grid;
+  grid-auto-rows: 80px;
+}
+
+.slot-strip.is-spinning {
+  animation: reel-spin var(--dur) cubic-bezier(0.25, 0.1, 0.2, 1.05) forwards;
+}
+
+@keyframes reel-spin {
+  from {
+    transform: translateY(calc(var(--len) * -80px));
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.slot-cell {
+  display: grid;
+  place-items: center;
+  height: 80px;
+}
+
+.slot-cell.is-win {
+  background: radial-gradient(circle, rgba(255, 197, 49, 0.45) 0%, transparent 70%);
+  animation: slot-glow 0.6s ease-in-out 3;
+}
+
+@keyframes slot-glow {
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+.slot-sym {
+  width: 58px;
+  height: 58px;
+}
+
+.slot-lines {
+  position: absolute;
+  inset: 6px;
+  width: calc(100% - 12px);
+  height: calc(100% - 12px);
+  pointer-events: none;
+}
+
+.slot-pays {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 5px;
+}
+
+.slot-pay {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 6px;
+  border-radius: 6px;
+  background: var(--s1);
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--muted);
+}
+
+.slot-pay .slot-sym {
+  width: 24px;
+  height: 24px;
+}
+
+.slot-pay b {
+  margin-left: auto;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+}

@@ -1,0 +1,62 @@
+.plinko {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  height: 100%;
+}
+
+.plinko-board {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+}
+
+.plinko-board canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+}
+
+.plinko-bins {
+  display: grid;
+  gap: 3px;
+  padding: 0 4px;
+}
+
+.plinko-bin {
+  display: grid;
+  place-items: center;
+  height: 26px;
+  border-radius: 4px;
+  font-size: 9px;
+  font-weight: 900;
+  color: #1a0505;
+  letter-spacing: -0.03em;
+  box-shadow: 0 3px 0 rgba(0, 0, 0, 0.35);
+  transition: transform 0.12s;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.plinko-bin.is-hit {
+  transform: translateY(5px);
+  box-shadow: none;
+}
+
+.plinko-max {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 10px;
+  border-radius: var(--r);
+  background: var(--input);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.plinko-max b {
+  color: var(--gold);
+  font-size: 14px;
+}

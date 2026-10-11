@@ -1,0 +1,133 @@
+.hilo {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  height: 100%;
+}
+
+.hilo-table {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 6px;
+  border-radius: 10px;
+  background: radial-gradient(80% 90% at 50% 50%, #21394a 0%, var(--s1) 100%);
+}
+
+.hilo-card {
+  transform: scale(1.18);
+}
+
+.hilo-edge {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  width: 80px;
+  font-size: 13px;
+  font-weight: 900;
+  color: var(--muted);
+}
+
+.hilo-edge small {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--faint);
+}
+
+.hilo-actions {
+  display: grid;
+  grid-template-columns: 1fr 64px 1fr;
+  gap: 8px;
+}
+
+.hilo-btn {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 1px;
+  height: 70px;
+  border-radius: 8px;
+  background: var(--s2);
+}
+
+.hilo-btn.is-hi {
+  background: linear-gradient(180deg, #1e7a3a, #145c2a);
+}
+
+.hilo-btn.is-lo {
+  background: linear-gradient(180deg, #8a1f36, #66152a);
+}
+
+.hilo-btn:disabled {
+  opacity: 0.35;
+}
+
+.hilo-arrow {
+  font-size: 15px;
+  line-height: 1;
+}
+
+.hilo-name {
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.hilo-pay {
+  font-size: 15px;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}
+
+.hilo-trail {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  min-height: 86px;
+}
+
+.hilo-step {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+}
+
+.hilo-tag {
+  font-size: 10px;
+  font-weight: 900;
+  color: var(--green);
+}
+
+.hilo-tag.is-bad {
+  color: var(--red);
+}
+
+.hilo-odds {
+  display: grid;
+  gap: 4px;
+  padding: 8px 10px;
+  border-radius: var(--r);
+  background: var(--input);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.hilo-odds div {
+  display: flex;
+  justify-content: space-between;
+  color: var(--muted);
+}
+
+.hilo-odds b {
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}

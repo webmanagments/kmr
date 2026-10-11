@@ -1,0 +1,161 @@
+.cases {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  height: 100%;
+}
+
+.case-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--cc) 28%, var(--s1)), var(--s1));
+}
+
+.case-banner div {
+  display: grid;
+  gap: 2px;
+}
+
+.case-banner b {
+  font-size: 16px;
+  font-weight: 900;
+}
+
+.case-banner span {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.case-reel {
+  position: relative;
+  height: 112px;
+  border-radius: 10px;
+  background: var(--input);
+  overflow: hidden;
+  box-shadow: inset 0 0 0 2px var(--s2);
+}
+
+.case-reel::before,
+.case-reel::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 50px;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.case-reel::before {
+  left: 0;
+  background: linear-gradient(90deg, var(--input), transparent);
+}
+
+.case-reel::after {
+  right: 0;
+  background: linear-gradient(-90deg, var(--input), transparent);
+}
+
+.case-strip {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  height: 100%;
+  will-change: transform;
+}
+
+.case-strip > div {
+  flex: none;
+}
+
+.case-item {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 4px;
+  width: 74px;
+  height: 92px;
+  border-radius: 8px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--rc) 22%, var(--s1)), var(--s1));
+  border-bottom: 4px solid var(--rc);
+}
+
+.case-item b {
+  font-size: 13px;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}
+
+.case-win .case-item {
+  box-shadow: 0 0 0 3px #fff, 0 0 20px var(--rc);
+  animation: case-pulse 0.6s ease-in-out 2;
+}
+
+@keyframes case-pulse {
+  50% {
+    transform: scale(1.08);
+  }
+}
+
+.case-marker {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  z-index: 3;
+  margin-left: -1.5px;
+  background: var(--gold);
+  box-shadow: 0 0 10px var(--gold);
+}
+
+.case-odds {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 5px;
+  align-content: start;
+}
+
+.case-odd {
+  display: grid;
+  justify-items: center;
+  gap: 1px;
+  padding: 5px 4px;
+  border-radius: 6px;
+  background: var(--s1);
+  border-bottom: 3px solid;
+}
+
+.case-odd b {
+  font-size: 12px;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}
+
+.case-odd span {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.case-best {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 10px;
+  border-radius: var(--r);
+  background: var(--input);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.case-best b {
+  color: var(--gold);
+  font-size: 14px;
+}

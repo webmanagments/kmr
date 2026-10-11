@@ -1,0 +1,85 @@
+.slide {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  height: 100%;
+}
+
+.slide-center {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 12px;
+}
+
+.slide-target {
+  padding: 7px 14px;
+  border-radius: 999px;
+  background: var(--s1);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.slide-target b {
+  color: var(--green);
+}
+
+.slide-reel {
+  position: relative;
+  height: 120px;
+  margin-bottom: 30px;
+  border-radius: 10px;
+  background: var(--input);
+  overflow: hidden;
+  box-shadow: inset 0 0 0 2px var(--s2);
+}
+
+.slide-strip {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  height: 100%;
+  padding-left: 50%;
+  will-change: transform;
+}
+
+.slide-card {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 70px;
+  height: 88px;
+  border-radius: 8px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--tc) 30%, var(--s1)), var(--s1));
+  border-top: 4px solid var(--tc);
+  font-size: 13px;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.75;
+}
+
+.slide-card.is-over {
+  opacity: 1;
+}
+
+.slide-card.is-win {
+  box-shadow: 0 0 0 3px var(--green), 0 0 18px rgba(0, 231, 1, 0.4);
+}
+
+.slide-card.is-lose {
+  box-shadow: 0 0 0 3px var(--red);
+}
+
+.slide-marker {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  margin-left: -1.5px;
+  background: #fff;
+  box-shadow: 0 0 10px #fff;
+}

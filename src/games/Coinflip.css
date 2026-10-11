@@ -1,0 +1,144 @@
+.flip {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  height: 100%;
+}
+
+.flip-stage {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  border-radius: 10px;
+  background: radial-gradient(70% 70% at 50% 62%, #33270a 0%, var(--s1) 100%);
+  overflow: hidden;
+}
+
+.flip-streak {
+  position: absolute;
+  top: 16px;
+  left: 0;
+  right: 0;
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+}
+
+.flip-streak .big-mult {
+  font-size: 40px;
+}
+
+.flip-streak small {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--muted);
+}
+
+.flip-coin-wrap {
+  position: absolute;
+  left: 50%;
+  top: 58%;
+  transform: translate(-50%, -50%);
+  perspective: 700px;
+}
+
+.flip-coin {
+  position: relative;
+  width: 150px;
+  height: 150px;
+  transform-style: preserve-3d;
+  transition: transform 0.2s;
+}
+
+.flip-coin[data-face='T'] {
+  transform: rotateY(180deg);
+}
+
+.flip-coin.is-spinning.to-H {
+  animation: flip-h 0.9s cubic-bezier(0.2, 0.7, 0.3, 1) forwards;
+}
+
+.flip-coin.is-spinning.to-T {
+  animation: flip-t 0.9s cubic-bezier(0.2, 0.7, 0.3, 1) forwards;
+}
+
+@keyframes flip-h {
+  0% {
+    transform: translateY(0) rotateY(0);
+  }
+  45% {
+    transform: translateY(-70px) rotateY(900deg);
+  }
+  100% {
+    transform: translateY(0) rotateY(1800deg);
+  }
+}
+
+@keyframes flip-t {
+  0% {
+    transform: translateY(0) rotateY(0);
+  }
+  45% {
+    transform: translateY(-70px) rotateY(990deg);
+  }
+  100% {
+    transform: translateY(0) rotateY(1980deg);
+  }
+}
+
+.flip-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+}
+
+.flip-face svg {
+  width: 100%;
+  height: 100%;
+}
+
+.flip-face.back {
+  transform: rotateY(180deg);
+}
+
+.flip-shadow {
+  width: 110px;
+  height: 14px;
+  margin: 18px auto 0;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.flip-trail {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 5px;
+}
+
+.flip-dot {
+  display: grid;
+  place-items: center;
+  height: 30px;
+  border-radius: 6px;
+  background: var(--s1);
+  font-size: 12px;
+  font-weight: 900;
+  color: var(--faint);
+}
+
+.flip-dot.is-ok {
+  background: var(--green);
+  color: var(--green-ink);
+}
+
+.flip-dot.is-bad {
+  background: var(--red);
+  color: #fff;
+}
+
+.flip-cash {
+  height: 40px;
+  background: var(--gold);
+  color: #2a1a00;
+}

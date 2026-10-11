@@ -1,0 +1,125 @@
+.keno {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  height: 100%;
+}
+
+.keno-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  grid-template-rows: repeat(5, 1fr);
+  gap: 6px;
+  min-height: 0;
+}
+
+.keno-tile {
+  display: grid;
+  place-items: center;
+  border-radius: 7px;
+  background: linear-gradient(180deg, #34536a, #2b4556);
+  box-shadow: 0 4px 0 #1b2f3c;
+  font-size: 15px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  transition: transform 0.1s;
+}
+
+.keno-tile:not(:disabled):focus {
+  transform: translateY(-2px);
+  background: linear-gradient(180deg, #4b7290, #3a5c74);
+}
+
+.keno-tile.is-picked {
+  background: linear-gradient(180deg, #9d5cff, #7b2ff7);
+  box-shadow: 0 4px 0 #4c1aa1;
+}
+
+.keno-tile.is-drawn {
+  background: var(--input);
+  box-shadow: inset 0 0 0 2px var(--s2);
+  color: var(--red);
+  animation: flip-in 0.2s ease-out;
+}
+
+.keno-tile.is-hit {
+  background: #06200b;
+  box-shadow: inset 0 0 0 2px var(--green), 0 0 12px rgba(0, 231, 1, 0.25);
+  animation: flip-in 0.2s ease-out;
+}
+
+.keno-tile:disabled {
+  cursor: default;
+}
+
+.keno-pays {
+  display: grid;
+  gap: 4px;
+  min-height: 46px;
+}
+
+.keno-hint {
+  display: grid;
+  place-items: center;
+  border-radius: var(--r);
+  background: var(--s1);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.keno-pay {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 2px;
+  border-radius: 6px;
+  background: var(--s1);
+  overflow: hidden;
+}
+
+.keno-pay b {
+  font-size: 10.5px;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.keno-pay span {
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--faint);
+}
+
+.keno-pay.is-on {
+  background: var(--green);
+  color: var(--green-ink);
+}
+
+.keno-pay.is-on span {
+  color: var(--green-ink);
+}
+
+.keno-count {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 10px;
+  border-radius: var(--r);
+  background: var(--input);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.keno-count b {
+  color: #fff;
+}
+
+@keyframes flip-in {
+  from {
+    transform: scale(0.7) rotateY(70deg);
+    opacity: 0.4;
+  }
+}

@@ -1,0 +1,148 @@
+.bj {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  padding: 10px 6px;
+  border-radius: 12px;
+  background: radial-gradient(90% 80% at 50% 50%, #12384a 0%, var(--s1) 100%);
+}
+
+.bj-zone {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+}
+
+.bj-cards {
+  display: flex;
+  min-height: 88px;
+}
+
+.bj-hands {
+  display: flex;
+  gap: 18px;
+  justify-content: center;
+}
+
+.bj-hand {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  padding: 6px;
+  border-radius: 10px;
+}
+
+.bj-hand.is-active {
+  box-shadow: inset 0 0 0 2px var(--gold);
+  background: rgba(255, 197, 49, 0.06);
+}
+
+.bj-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--muted);
+  text-transform: capitalize;
+}
+
+.bj-total {
+  min-width: 30px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: var(--s3);
+  color: #fff;
+  font-size: 12.5px;
+  font-weight: 900;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.bj-total.is-win {
+  background: var(--green);
+  color: var(--green-ink);
+}
+.bj-total.is-lose {
+  background: var(--red);
+}
+.bj-total.is-push {
+  background: var(--gold);
+  color: #2a1a00;
+}
+
+.bj-res {
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.bj-res.is-win,
+.bj-res.is-blackjack {
+  color: var(--green);
+}
+.bj-res.is-lose {
+  color: var(--red);
+}
+.bj-res.is-push {
+  color: var(--gold);
+}
+
+.bj-chip {
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--blue);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 900;
+}
+
+.bj-rules {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  opacity: 0.55;
+}
+
+.bj-rules span {
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+}
+
+.bj-rules small {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.bj-ghost {
+  width: 62px;
+  height: 88px;
+  border-radius: 7px;
+  border: 2px dashed var(--s3);
+}
+
+.bj-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.bj-btn {
+  height: 46px;
+  border-radius: var(--r);
+  background: var(--s2);
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.bj-btn:disabled {
+  opacity: 0.35;
+}
+
+.bj-btn:not(:disabled):focus {
+  background: var(--s3);
+}

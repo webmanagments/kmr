@@ -1,0 +1,86 @@
+.mines {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  height: 100%;
+}
+
+.mines-bar {
+  display: flex;
+  gap: 6px;
+}
+
+.mines-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: var(--s1);
+  font-size: 12.5px;
+  font-weight: 800;
+}
+
+.mines-chip.is-next {
+  margin-left: auto;
+  color: var(--green);
+}
+
+.mines-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  grid-template-rows: repeat(5, 1fr);
+  gap: 8px;
+  min-height: 0;
+}
+
+.mine-tile {
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: linear-gradient(180deg, #34536a, #2b4556);
+  box-shadow: 0 5px 0 #1b2f3c, inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  transition: transform 0.12s, background 0.12s;
+}
+
+.mine-tile:not(:disabled):focus {
+  background: linear-gradient(180deg, #4b7290, #3a5c74);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 0 #1b2f3c, inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+
+.mine-tile:disabled {
+  cursor: default;
+}
+
+.mine-tile.is-gem,
+.mine-tile.is-bomb {
+  background: var(--input);
+  box-shadow: inset 0 0 0 2px var(--s2);
+  transform: none;
+  animation: flip-in 0.22s ease-out;
+}
+
+.mine-tile.is-gem:not(.is-ghost) {
+  box-shadow: inset 0 0 0 2px rgba(0, 231, 1, 0.45), 0 0 14px rgba(0, 231, 1, 0.12);
+}
+
+.mine-tile.is-hit {
+  background: #3a0d18;
+  box-shadow: inset 0 0 0 2px var(--red), 0 0 18px rgba(255, 77, 109, 0.35);
+}
+
+.mine-tile.is-ghost svg {
+  opacity: 0.35;
+  transform: scale(0.8);
+}
+
+@keyframes flip-in {
+  from {
+    transform: scale(0.7) rotateY(70deg);
+    opacity: 0.4;
+  }
+}

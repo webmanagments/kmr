@@ -1,0 +1,156 @@
+.bac {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  height: 100%;
+}
+
+.bac-table {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  min-height: 0;
+}
+
+.bac-side {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px;
+  border-radius: 10px;
+  background: var(--s1);
+  border-top: 4px solid;
+  transition: box-shadow 0.2s;
+}
+
+.bac-side.is-player {
+  border-color: #3d8bff;
+}
+.bac-side.is-banker {
+  border-color: #ff4d6d;
+}
+
+.bac-side.is-win {
+  box-shadow: 0 0 0 2px var(--green), 0 0 18px rgba(0, 231, 1, 0.2);
+}
+
+.bac-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.bac-head b {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--s3);
+  font-size: 17px;
+  letter-spacing: 0;
+}
+
+.bac-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  justify-content: center;
+  align-content: flex-start;
+}
+
+.bac-third {
+  transform: rotate(90deg) translateX(8px);
+  margin: 0 8px;
+}
+
+.bac-verdict {
+  text-align: center;
+  font-size: 14px;
+  font-weight: 900;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.bac-verdict.is-player {
+  color: #6fa8ff;
+}
+.bac-verdict.is-banker {
+  color: #ff7a93;
+}
+.bac-verdict.is-tie {
+  color: var(--green);
+}
+
+.bac-spots {
+  display: grid;
+  grid-template-columns: 1fr 0.8fr 1fr;
+  gap: 6px;
+}
+
+.bac-spot {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 2px;
+  height: 92px;
+  border-radius: 10px;
+  background: var(--s2);
+  border-bottom: 4px solid;
+}
+
+.bac-spot.is-player {
+  border-color: #3d8bff;
+  background: linear-gradient(180deg, #17345e, #13243a);
+}
+.bac-spot.is-banker {
+  border-color: #ff4d6d;
+  background: linear-gradient(180deg, #4e1625, #2b1219);
+}
+.bac-spot.is-tie {
+  border-color: var(--green);
+  background: linear-gradient(180deg, #0f3d1d, #102618);
+}
+
+.bac-spot.is-hit {
+  box-shadow: 0 0 0 3px var(--gold);
+}
+
+.bac-spot-name {
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.bac-spot-odds {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.bac-spot-amt {
+  margin-top: 4px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #fff;
+  color: #0b1822;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.bac-rules {
+  padding: 9px 10px;
+  border-radius: var(--r);
+  background: var(--input);
+  font-size: 11.5px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--muted);
+}

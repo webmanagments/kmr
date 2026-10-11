@@ -1,0 +1,177 @@
+.horses {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  height: 100%;
+}
+
+.track {
+  position: relative;
+  flex: 1;
+  display: grid;
+  grid-template-rows: repeat(6, 1fr);
+  padding: 6px 0;
+  border-radius: 10px;
+  background: repeating-linear-gradient(90deg, #14361f 0 40px, #173d23 40px 80px);
+  overflow: hidden;
+}
+
+.track-finish {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 14px;
+  width: 8px;
+  background: repeating-linear-gradient(180deg, #fff 0 8px, #0b1822 8px 16px);
+  opacity: 0.85;
+}
+
+.lane {
+  position: relative;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.12);
+}
+
+.lane:last-child {
+  border-bottom: 0;
+}
+
+.lane.is-pick {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.lane-n {
+  flex: none;
+  width: 22px;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 900;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.lane-run {
+  position: relative;
+  flex: 1;
+  height: 100%;
+  margin-right: 22px;
+}
+
+.horse {
+  position: absolute;
+  top: 50%;
+  width: 70px;
+  transform: translateY(-50%);
+}
+
+.horse-svg {
+  display: block;
+  width: 70px;
+  height: 44px;
+}
+
+.horse.is-running .leg {
+  transform-box: fill-box;
+  transform-origin: top center;
+  animation: gallop 0.32s ease-in-out infinite alternate;
+}
+
+.horse.is-running .leg.b {
+  animation-delay: -0.16s;
+}
+
+@keyframes gallop {
+  from {
+    transform: rotate(-22deg);
+  }
+  to {
+    transform: rotate(22deg);
+  }
+}
+
+.lane-place {
+  position: absolute;
+  left: 28px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: var(--s2);
+  font-size: 10.5px;
+  font-weight: 900;
+}
+
+.lane-place.p1 {
+  background: var(--gold);
+  color: #2a1a00;
+}
+.lane-place.p2 {
+  background: #cfd8e3;
+  color: #0b1822;
+}
+.lane-place.p3 {
+  background: #d08a4a;
+  color: #1a0d00;
+}
+
+.horse-status {
+  min-height: 36px;
+  display: grid;
+  place-items: center;
+  padding: 0 10px;
+  border-radius: 8px;
+  background: var(--s1);
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--muted);
+  text-align: center;
+}
+
+.horse-list {
+  display: grid;
+  gap: 4px;
+}
+
+.horse-opt {
+  display: grid;
+  grid-template-columns: 22px 1fr auto;
+  align-items: center;
+  gap: 8px;
+  height: 34px;
+  padding: 0 8px;
+  border-radius: var(--r);
+  background: var(--input);
+  box-shadow: inset 0 0 0 2px var(--line);
+  font-size: 12.5px;
+  font-weight: 700;
+  text-align: left;
+}
+
+.horse-opt.is-on {
+  background: var(--s3);
+  box-shadow: inset 0 0 0 2px var(--green);
+}
+
+.horse-opt:disabled {
+  opacity: 0.6;
+}
+
+.horse-num {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+  color: #0b1822;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.horse-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.horse-opt b {
+  font-variant-numeric: tabular-nums;
+}

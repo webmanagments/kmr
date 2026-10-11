@@ -1,0 +1,180 @@
+/* Shared stage styles for all games (loaded with the first game chunk). */
+
+.info-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.info-box {
+  display: grid;
+  gap: 4px;
+  padding: 8px 10px;
+  border-radius: var(--r);
+  background: var(--s1);
+}
+
+.info-box span {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.info-box b {
+  font-size: 15px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.big-mult {
+  font-size: 64px;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.panel-title {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--muted);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.rl-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 10px;
+  border-radius: var(--r);
+  background: var(--input);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.rl-total b {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #fff;
+  font-size: 13px;
+}
+
+/* ---------- Dice ---------- */
+
+.dice {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  gap: 18px;
+}
+
+.dice-result {
+  margin-top: 10px;
+  text-align: center;
+  font-size: 58px;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  color: var(--s4);
+  line-height: 1;
+}
+
+.dice-result.is-win {
+  color: var(--green);
+}
+.dice-result.is-lose {
+  color: var(--red);
+}
+
+.dice-track-wrap {
+  margin-top: auto;
+  padding: 32px 18px 50px;
+  border-radius: 18px;
+  background: var(--s1);
+}
+
+.dice-scale {
+  position: relative;
+  height: 0;
+}
+
+.dice-scale span {
+  position: absolute;
+  top: -26px;
+  transform: translateX(-50%);
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--muted);
+}
+
+.dice-track {
+  position: relative;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--input);
+  margin-top: 6px;
+}
+
+.dice-fill {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+}
+
+.dice-handle {
+  position: absolute;
+  top: 50%;
+  display: flex;
+  gap: 3px;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+  background: #5b9cf4;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.5);
+  transform: translate(-50%, -50%);
+  transition: left 0.2s ease-out;
+}
+
+.dice-handle i {
+  width: 3px;
+  height: 13px;
+  border-radius: 2px;
+  background: #fff;
+  opacity: 0.85;
+}
+
+.dice-marker {
+  position: absolute;
+  top: 22px;
+  transform: translateX(-50%);
+  animation: dice-drop 0.3s cubic-bezier(0.3, 1.5, 0.5, 1);
+}
+
+.dice-marker span {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 30px;
+  clip-path: polygon(12% 0, 88% 0, 100% 50%, 88% 100%, 12% 100%, 0 50%);
+  background: var(--red);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}
+
+.dice-marker.is-win span {
+  background: var(--green);
+  color: var(--green-ink);
+}
+
+@keyframes dice-drop {
+  from {
+    transform: translate(-50%, 14px) scale(0.6);
+    opacity: 0;
+  }
+}

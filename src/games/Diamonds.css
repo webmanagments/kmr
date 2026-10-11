@@ -1,0 +1,108 @@
+.dia {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  height: 100%;
+}
+
+.dia-row {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 7px;
+  padding: 12px;
+  border-radius: 10px;
+  background: var(--s1);
+}
+
+.dia-slot {
+  display: grid;
+  place-items: center;
+  height: 82px;
+  border-radius: 8px;
+  background: var(--input);
+  transition: box-shadow 0.2s, opacity 0.2s;
+}
+
+.dia-slot.is-match {
+  box-shadow: inset 0 0 0 2px var(--green), 0 0 14px rgba(0, 231, 1, 0.2);
+}
+
+.dia-slot.is-dim {
+  opacity: 0.4;
+}
+
+.dia-gem {
+  animation: gem-drop 0.32s cubic-bezier(0.3, 1.5, 0.5, 1) both;
+}
+
+@keyframes gem-drop {
+  from {
+    transform: translateY(-40px) scale(0.5);
+    opacity: 0;
+  }
+}
+
+.dia-empty {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--s2);
+}
+
+.dia-pays {
+  display: grid;
+  gap: 4px;
+  flex: 1;
+  align-content: start;
+}
+
+.dia-pay {
+  display: grid;
+  grid-template-columns: 86px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  height: 34px;
+  padding: 0 12px;
+  border-radius: 6px;
+  background: var(--s1);
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.dia-pay b {
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+}
+
+.dia-pay.is-hit {
+  background: var(--green);
+  color: var(--green-ink);
+}
+
+.dia-pay.is-hit b {
+  color: var(--green-ink);
+}
+
+.dia-shape {
+  display: flex;
+  gap: 4px;
+}
+
+.dia-shape i {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  transform: rotate(45deg) scale(0.8);
+}
+
+.dia-note {
+  padding: 10px;
+  border-radius: var(--r);
+  background: var(--input);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--muted);
+}

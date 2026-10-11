@@ -1,0 +1,76 @@
+.towers {
+  position: relative;
+  height: 100%;
+}
+
+.towers-grid {
+  display: grid;
+  grid-template-rows: repeat(9, 1fr);
+  gap: 5px;
+  height: 100%;
+  padding: 8px;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #2a1608 0%, var(--s1) 100%);
+}
+
+.towers-row {
+  display: grid;
+  gap: 6px;
+  min-height: 0;
+}
+
+.tower-tile {
+  display: grid;
+  place-items: center;
+  border-radius: 6px;
+  background: var(--s2);
+  opacity: 0.55;
+  transition: transform 0.12s, background 0.12s, opacity 0.12s;
+}
+
+.tower-mult {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.towers-row.is-active .tower-tile {
+  opacity: 1;
+  background: linear-gradient(180deg, #3b5d74, #2b4556);
+  box-shadow: 0 3px 0 #1b2f3c;
+}
+
+.towers-row.is-active .tower-mult {
+  color: #fff;
+}
+
+.towers-row.is-active .tower-tile:focus {
+  background: linear-gradient(180deg, #ffb347, #ff8c1a);
+  box-shadow: 0 3px 0 #b3570b;
+  transform: translateY(-2px);
+}
+
+.towers-row.is-active .tower-tile:focus .tower-mult {
+  color: #2a1400;
+}
+
+.tower-tile.is-picked {
+  opacity: 1;
+  background: rgba(255, 197, 49, 0.18);
+  box-shadow: inset 0 0 0 2px rgba(255, 197, 49, 0.6);
+}
+
+.tower-tile.is-hit {
+  opacity: 1;
+  background: rgba(255, 77, 109, 0.2);
+  box-shadow: inset 0 0 0 2px var(--red);
+}
+
+.tower-tile.is-ghost {
+  opacity: 0.4;
+}
+
+.tower-tile.is-ghost svg {
+  transform: scale(0.8);
+}

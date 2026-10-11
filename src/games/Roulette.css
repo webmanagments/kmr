@@ -1,0 +1,154 @@
+.rl {
+  position: relative;
+  height: 100%;
+}
+
+.rl-board {
+  display: grid;
+  grid-template-columns: 34px repeat(3, 1fr) 40px;
+  grid-template-rows: 32px repeat(12, minmax(0, 1fr)) 30px;
+  gap: 3px;
+  height: 100%;
+}
+
+.rl-cell {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 0;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}
+
+.rl-cell.is-red {
+  background: #e9113c;
+}
+.rl-cell.is-black {
+  background: #2f4553;
+}
+.rl-cell.is-green {
+  background: #10a83a;
+}
+
+.rl-cell.rl-side {
+  background: var(--s1);
+  box-shadow: inset 0 0 0 1px var(--s3);
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.rl-vert .rl-cell-label {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  white-space: nowrap;
+}
+
+.rl-cell:focus {
+  outline-offset: -1px;
+  z-index: 2;
+  filter: brightness(1.25);
+}
+
+.rl-cell.is-hit {
+  box-shadow: 0 0 0 3px var(--gold), 0 0 14px rgba(255, 197, 49, 0.5);
+  z-index: 1;
+}
+
+.rl-cell:disabled {
+  cursor: default;
+}
+
+.rl-chip {
+  position: absolute;
+  right: 2px;
+  top: 50%;
+  display: grid;
+  place-items: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 3px;
+  border-radius: 11px;
+  transform: translateY(-50%);
+  background: #fff;
+  color: #0b1822;
+  border: 2px dashed var(--blue);
+  font-size: 9px;
+  font-weight: 900;
+  z-index: 1;
+}
+
+.rl-vert .rl-chip {
+  right: 50%;
+  top: 4px;
+  transform: translateX(50%);
+}
+
+.rl-diamond {
+  display: block;
+  width: 14px;
+  height: 22px;
+  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+}
+
+.rl-diamond.is-red {
+  background: #e9113c;
+}
+
+.rl-diamond.is-black {
+  background: #8aa4b7;
+}
+
+.rl-result {
+  display: grid;
+  place-items: center;
+  height: 74px;
+  border-radius: 10px;
+  font-size: 40px;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  background: var(--input);
+  box-shadow: inset 0 0 0 2px var(--line);
+}
+
+.rl-result.is-red {
+  background: #e9113c;
+}
+.rl-result.is-black {
+  background: #2f4553;
+}
+.rl-result.is-green {
+  background: #10a83a;
+}
+
+.rl-result.is-rolling {
+  opacity: 0.8;
+}
+
+.rl-hist {
+  display: flex;
+  gap: 4px;
+  min-height: 22px;
+}
+
+.rl-dot {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  font-size: 9.5px;
+  font-weight: 900;
+}
+
+.rl-dot.is-red {
+  background: #e9113c;
+}
+.rl-dot.is-black {
+  background: #2f4553;
+}
+.rl-dot.is-green {
+  background: #10a83a;
+}
+

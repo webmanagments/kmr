@@ -1,0 +1,104 @@
+.pump {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  height: 100%;
+}
+
+.pump-stage {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: radial-gradient(70% 70% at 50% 60%, #2a1033 0%, var(--s1) 100%);
+  overflow: hidden;
+}
+
+.pump-mult {
+  position: absolute;
+  top: 14px;
+  left: 0;
+  right: 0;
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  z-index: 1;
+}
+
+.pump-mult .big-mult {
+  font-size: 40px;
+}
+
+.pump-mult small {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--muted);
+}
+
+.pump-balloon {
+  width: 170px;
+  margin-top: 70px;
+  transform-origin: 50% 80%;
+  transition: transform 0.18s cubic-bezier(0.3, 1.6, 0.5, 1);
+  animation: puff 0.25s ease-out;
+}
+
+@keyframes puff {
+  50% {
+    filter: brightness(1.25);
+  }
+}
+
+.pump-burst {
+  width: 220px;
+  margin-top: 60px;
+  animation: burst 0.35s ease-out;
+}
+
+@keyframes burst {
+  from {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+}
+
+.pump-ladder {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 5px;
+  min-height: 44px;
+}
+
+.pump-rung {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 2px;
+  border-radius: 6px;
+  background: var(--s1);
+}
+
+.pump-rung span {
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--faint);
+}
+
+.pump-rung b {
+  font-size: 12.5px;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}
+
+.pump-rung.is-next {
+  box-shadow: inset 0 0 0 2px var(--green);
+}
+
+.pump-cash {
+  height: 40px;
+  background: var(--gold);
+  color: #2a1a00;
+}
