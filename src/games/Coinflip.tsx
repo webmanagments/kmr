@@ -1,8 +1,9 @@
-import {useState} from 'react';
+import {useEffect, useState} from 'react';
 import {useFlash, usePersistent, useSettler} from '../lib/hooks';
 import {HOUSE, fmtCoins, fmtMult, money, rand, reducedMotion} from '../lib/util';
 import {useWallet, wallet} from '../lib/wallet';
-import {BetAmount, PlayButton, Readout, Segmented} from '../ui/controls';
+import {AutoRow, AutoSheet, useAutoBet} from '../ui/auto';
+import {BetAmount, ListStepper, PlayButton, Readout, Segmented} from '../ui/controls';
 import {GameLayout, WinPopup, type WinInfo} from '../ui/game';
 import {Coin} from '../ui/icons';
 import './games.css';
@@ -43,6 +44,7 @@ export default function Coinflip() {
   const [spin, setSpin] = useState<{to: Side; n: number} | null>(null);
   const [face, setFace] = useState<Side>('H');
   const [busy, setBusy] = useState(false);
+  const [autoWins, setAutoWins] = useState(1);
   const [win, flashWin] = useFlash<WinInfo>();
   const settle = useSettler();
   const playing = round.phase === 'playing';
@@ -85,12 +87,21 @@ export default function Coinflip() {
   const streak = playing ? round.flips.length : 0;
   const live = playing && streak > 0; // a streak is in progress (not the opening flip)
 
+  const auto = useAutoBet({game: 'coinflip', idle: !playing && !busy, trigger: flip});
+  // Auto: keep calling until the chosen streak, then cash out.
+  useEffect(() => {
+    if (!auto.running || !playing || busy || streak === 0) return;
+    const t = setTimeout(() => (streak >= autoWins ? cashout() : flip()), auto.stepDelay);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [auto.running, playing, busy, streak]);
+
   return (
     <GameLayout
       title="Coinflip"
       sidebar={
         <>
-          <BetAmount locked={playing || busy} />
+          <BetAmount locked={playing || busy || auto.running} />
           <Segmented
             label="Call it"
             value={side}
@@ -111,10 +122,21 @@ export default function Coinflip() {
               </>
             }
           />
-          <PlayButton onClick={flip} disabled={busy} sub={live ? `Next ${fmtMult(round.mult * STEP)}` : `Pays ${fmtMult(STEP)}`}>
-            {busy ? 'Flipping…' : live ? 'Flip Again' : 'Bet & Flip'}
-          </PlayButton>
-          {live && (
+          <AutoRow auto={auto}>
+            <PlayButton onClick={flip} disabled={busy} sub={live ? `Next ${fmtMult(round.mult * STEP)}` : `Pays ${fmtMult(STEP)}`}>
+              {busy ? 'Flipping…' : live ? 'Flip Again' : 'Bet & Flip'}
+            </PlayButton>
+          </AutoRow>
+          <AutoSheet auto={auto}>
+            <ListStepper
+              label="Cash out after"
+              values={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]}
+              value={autoWins}
+              onChange={setAutoWins}
+              render={v => `${v} win${v > 1 ? 's' : ''} · ${fmtMult(Math.pow(STEP, v))}`}
+            />
+          </AutoSheet>
+          {live && !auto.running && (
             <button type="button" className="ghost-btn flip-cash" onClick={cashout} disabled={busy || round.mult <= 1}>
               Cashout {fmtCoins(round.stake * round.mult)}
             </button>

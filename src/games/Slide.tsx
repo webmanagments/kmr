@@ -2,6 +2,7 @@ import {useState} from 'react';
 import {useFlash, useSettler} from '../lib/hooks';
 import {HOUSE, fmtMult, money, rand, reducedMotion} from '../lib/util';
 import {useWallet, wallet} from '../lib/wallet';
+import {AutoRow, AutoSheet, useAutoBet} from '../ui/auto';
 import {BetAmount, ListStepper, PlayButton, ProfitOnWin, Readout} from '../ui/controls';
 import {GameLayout, HistoryStrip, WinPopup, type WinInfo} from '../ui/game';
 import './games.css';
@@ -59,18 +60,23 @@ export default function Slide() {
     }, (reducedMotion() ? 450 : SPIN_MS) + 80);
   };
 
+  const auto = useAutoBet({game: 'slide', idle: !busy, trigger: bet});
+
   return (
     <GameLayout
       title="Slide"
       sidebar={
         <>
-          <BetAmount locked={busy} />
+          <BetAmount locked={busy || auto.running} />
           <ListStepper label="Target" values={TARGETS} value={target} onChange={setTarget} render={v => fmtMult(v)} disabled={busy} tone="green" />
           <Readout label="Win Chance" value={`${((HOUSE / target) * 100).toFixed(2)}%`} />
           <ProfitOnWin mult={target} />
-          <PlayButton onClick={bet} disabled={busy}>
-            {busy ? 'Sliding…' : 'Bet'}
-          </PlayButton>
+          <AutoRow auto={auto}>
+            <PlayButton onClick={bet} disabled={busy}>
+              {busy ? 'Sliding…' : 'Bet'}
+            </PlayButton>
+          </AutoRow>
+          <AutoSheet auto={auto} />
         </>
       }
       stage={

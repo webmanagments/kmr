@@ -2,6 +2,7 @@ import {useEffect, useRef, useState} from 'react';
 import {useFlash} from '../lib/hooks';
 import {fmtMult, money, rand} from '../lib/util';
 import {useWallet, wallet} from '../lib/wallet';
+import {AutoRow, AutoSheet, useAutoBet} from '../ui/auto';
 import {BetAmount, ListStepper, PlayButton, Segmented} from '../ui/controls';
 import {GameLayout, HistoryStrip, WinPopup, type WinInfo} from '../ui/game';
 import {PLINKO, type Risk} from './plinkoTables';
@@ -175,32 +176,36 @@ export default function Plinko() {
   };
 
   const busy = active > 0;
+  const auto = useAutoBet({game: 'plinko', idle: !busy, trigger: drop, delay: 200});
 
   return (
     <GameLayout
       title="Plinko"
       sidebar={
         <>
-          <BetAmount />
+          <BetAmount locked={auto.running} />
           <Segmented
             label="Risk"
             value={risk}
             onChange={setRisk}
-            disabled={busy}
+            disabled={busy || auto.running}
             options={[
               {value: 'low', label: 'Low'},
               {value: 'medium', label: 'Med', aria: 'Medium'},
               {value: 'high', label: 'High'},
             ]}
           />
-          <ListStepper label="Rows" values={ROWS} value={rows} onChange={setRows} disabled={busy} />
+          <ListStepper label="Rows" values={ROWS} value={rows} onChange={setRows} disabled={busy || auto.running} />
           <div className="plinko-max">
             <span>Top prize</span>
             <b>{fmtMult(mults[0])}</b>
           </div>
-          <PlayButton onClick={drop} disabled={active >= MAX_BALLS} sub={busy ? `${active} in play` : undefined}>
-            Drop Ball
-          </PlayButton>
+          <AutoRow auto={auto}>
+            <PlayButton onClick={drop} disabled={active >= MAX_BALLS} sub={busy ? `${active} in play` : undefined}>
+              Drop Ball
+            </PlayButton>
+          </AutoRow>
+          <AutoSheet auto={auto} />
         </>
       }
       stage={

@@ -3,6 +3,7 @@ import {drawCard} from '../lib/cards';
 import {useFlash, useSettler} from '../lib/hooks';
 import {fmtCoins, money, reducedMotion} from '../lib/util';
 import {toast, useWallet, wallet} from '../lib/wallet';
+import {AutoRow, AutoSheet, useAutoBet} from '../ui/auto';
 import {BetAmount, PlayButton} from '../ui/controls';
 import {GameLayout, PlayingCard, WinPopup, type CardT, type WinInfo} from '../ui/game';
 import {Coin, Undo} from '../ui/icons';
@@ -71,12 +72,14 @@ export default function DragonTiger() {
     }, step * 2 + 300);
   };
 
+  const auto = useAutoBet({game: 'dragontiger', idle: !busy, trigger: deal, delay: 700});
+
   return (
     <GameLayout
       title="Dragon Tiger"
       sidebar={
         <>
-          <BetAmount locked={busy} label="Chip Value" />
+          <BetAmount locked={busy || auto.running} label="Chip Value" />
           <div className="rl-total">
             <span>Total bet</span>
             <b>
@@ -92,9 +95,12 @@ export default function DragonTiger() {
             </button>
           </div>
           <div className="bac-rules">Highest card wins. Ace is low. On a tie, Dragon and Tiger bets return half.</div>
-          <PlayButton onClick={deal} disabled={busy || !bets.length} autoFocus={false} sub={bets.length ? undefined : 'Place chips first'}>
-            {busy ? 'Dealing…' : 'Deal'}
-          </PlayButton>
+          <AutoRow auto={auto}>
+            <PlayButton onClick={deal} disabled={busy || !bets.length} autoFocus={false} sub={bets.length ? undefined : 'Place chips first'}>
+              {busy ? 'Dealing…' : 'Deal'}
+            </PlayButton>
+          </AutoRow>
+          <AutoSheet auto={auto} note={bets.length ? `Repeats your ${fmtCoins(total)} of chips every hand.` : 'Place your chips first.'} />
         </>
       }
       stage={

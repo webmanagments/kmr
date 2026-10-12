@@ -211,8 +211,18 @@ export function PlayButton({
   autoFocus?: boolean;
   sub?: ReactNode;
 }) {
+  // Busy/unavailable uses aria-disabled rather than `disabled`, so the button keeps
+  // focus mid-round and the next pinch lands on it again (a disabled button drops focus).
   return (
-    <button type="button" className={`play-btn tone-${tone}`} onClick={onClick} disabled={disabled} data-autofocus={autoFocus ? '' : undefined}>
+    <button
+      type="button"
+      className={`play-btn tone-${tone}`}
+      onClick={() => {
+        if (!disabled) onClick();
+      }}
+      aria-disabled={disabled ? 'true' : undefined}
+      data-autofocus={autoFocus ? '' : undefined}
+    >
       <span className="play-label">{children}</span>
       {sub != null && <span className="play-sub">{sub}</span>}
     </button>

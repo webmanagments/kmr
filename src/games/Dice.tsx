@@ -2,6 +2,7 @@ import {useState} from 'react';
 import {useFlash, useSettler} from '../lib/hooks';
 import {HOUSE, money, rand} from '../lib/util';
 import {useWallet, wallet} from '../lib/wallet';
+import {AutoRow, AutoSheet, useAutoBet} from '../ui/auto';
 import {BetAmount, ListStepper, PlayButton, ProfitOnWin, Segmented} from '../ui/controls';
 import {GameLayout, HistoryStrip, WinPopup, type WinInfo} from '../ui/game';
 import './games.css';
@@ -44,13 +45,14 @@ export default function Dice() {
   };
 
   const pos = last ? last.value : 50;
+  const auto = useAutoBet({game: 'dice', idle: !busy, trigger: bet});
 
   return (
     <GameLayout
       title="Dice"
       sidebar={
         <>
-          <BetAmount locked={busy} />
+          <BetAmount locked={busy || auto.running} />
           <ListStepper
             label="Multiplier"
             values={MULTS}
@@ -70,9 +72,12 @@ export default function Dice() {
             ]}
           />
           <ProfitOnWin mult={mult} />
-          <PlayButton onClick={bet} disabled={busy}>
-            Bet
-          </PlayButton>
+          <AutoRow auto={auto}>
+            <PlayButton onClick={bet} disabled={busy}>
+              Bet
+            </PlayButton>
+          </AutoRow>
+          <AutoSheet auto={auto} />
         </>
       }
       stage={

@@ -116,7 +116,7 @@ for (const [vw, vh] of [[480, 480], [600, 540]]) {
 {
   const {page} = await fresh();
   await page.focus('.pager-btn:not(:disabled)');
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i < 4; i++) {
     await page.keyboard.press('Enter');
     await page.waitForTimeout(300);
   }

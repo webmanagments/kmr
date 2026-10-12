@@ -1,9 +1,10 @@
-import {useEffect, useRef} from 'react';
+import {useEffect, useRef, useState} from 'react';
 import {useFlash, usePersistent} from '../lib/hooks';
 import {focusDefault, focusEl} from '../lib/spatial';
 import {HOUSE, fmtCoins, fmtMult, money, randInt, shuffle} from '../lib/util';
 import {useWallet, wallet} from '../lib/wallet';
-import {BetAmount, PlayButton, Readout, Segmented} from '../ui/controls';
+import {AutoRow, AutoSheet, useAutoBet} from '../ui/auto';
+import {BetAmount, ListStepper, PlayButton, Readout, Segmented} from '../ui/controls';
 import {GameLayout, WinPopup, type WinInfo} from '../ui/game';
 import {Coin, Shuffle} from '../ui/icons';
 import './games.css';
@@ -57,6 +58,7 @@ export default function Towers() {
   const {betAmount} = useWallet();
   const [round, setRound] = usePersistent<Round>('towers', fresh('easy'));
   const [win, flashWin] = useFlash<WinInfo>();
+  const [autoFloors, setAutoFloors] = useState(3);
   const gridRef = useRef<HTMLDivElement>(null);
   const cfg = DIFFS[round.diff];
   const level = round.picks.length;
@@ -70,7 +72,7 @@ export default function Towers() {
   useEffect(() => {
     if (prevPhase.current === round.phase) return;
     prevPhase.current = round.phase;
-    if (round.phase === 'playing') focusRow(round.picks.length);
+    if (round.phase === 'playing' && !auto.running) focusRow(round.picks.length);
     else requestAnimationFrame(() => focusDefault());
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [round.phase]);
@@ -103,23 +105,31 @@ export default function Towers() {
     if (next.picks.length === LEVELS) cashout(next);
     else {
       setRound(next);
-      focusRow(next.picks.length);
+      if (!auto.running) focusRow(next.picks.length);
     }
   };
 
   const over = round.phase === 'over';
+  const auto = useAutoBet({game: 'towers', idle: !playing, trigger: start});
+  // Auto: climb random tiles to the chosen floor, then cash out.
+  useEffect(() => {
+    if (!auto.running || !playing) return;
+    const t = setTimeout(() => (level >= autoFloors ? cashout() : choose(randInt(cfg.tiles))), auto.stepDelay);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [auto.running, playing, level]);
 
   return (
     <GameLayout
       title="Towers"
       sidebar={
         <>
-          <BetAmount locked={playing} />
+          <BetAmount locked={playing || auto.running} />
           <Segmented
             label="Difficulty"
             value={round.diff}
             onChange={d => setRound(fresh(d))}
-            disabled={playing}
+            disabled={playing || auto.running}
             options={(Object.keys(DIFFS) as Diff[]).map(d => ({value: d, label: DIFFS[d].label, aria: d}))}
           />
           {playing ? (
@@ -134,20 +144,37 @@ export default function Towers() {
                   </>
                 }
               />
-              <button type="button" className="ghost-btn" onClick={() => choose(randInt(cfg.tiles))}>
-                <Shuffle size={15} />
-                Random pick
-              </button>
-              <PlayButton onClick={() => cashout()} disabled={level === 0} sub={level ? fmtCoins(round.stake * mult) : 'Clear a row first'}>
-                Cashout
-              </PlayButton>
+              {auto.running ? (
+                <AutoRow auto={auto}>{null}</AutoRow>
+              ) : (
+                <>
+                  <button type="button" className="ghost-btn" onClick={() => choose(randInt(cfg.tiles))}>
+                    <Shuffle size={15} />
+                    Random pick
+                  </button>
+                  <PlayButton onClick={() => cashout()} disabled={level === 0} sub={level ? fmtCoins(round.stake * mult) : 'Clear a row first'}>
+                    Cashout
+                  </PlayButton>
+                </>
+              )}
             </>
           ) : (
             <>
               <Readout label="Top Floor Pays" tone="gold" value={fmtMult(towerMult(round.diff, LEVELS))} />
-              <PlayButton onClick={start}>Bet</PlayButton>
+              <AutoRow auto={auto}>
+                <PlayButton onClick={start}>Bet</PlayButton>
+              </AutoRow>
             </>
           )}
+          <AutoSheet auto={auto}>
+            <ListStepper
+              label="Cash out at floor"
+              values={Array.from({length: LEVELS}, (_, i) => i + 1)}
+              value={autoFloors}
+              onChange={setAutoFloors}
+              render={v => `${v} · ${fmtMult(towerMult(round.diff, v))}`}
+            />
+          </AutoSheet>
         </>
       }
       stage={

@@ -1,0 +1,85 @@
+.sky {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  height: 100%;
+}
+
+.sky-hud {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.sky-hud div {
+  display: grid;
+  gap: 1px;
+  padding: 5px 9px;
+  border-radius: 6px;
+  background: var(--s1);
+}
+
+.sky-hud span {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+.sky-hud b {
+  font-size: 15px;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}
+
+.sky-view {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: inset 0 0 0 1px var(--s2);
+}
+
+.sky-view canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+}
+
+.sky-banner {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(0, 231, 1, 0.92);
+  color: var(--green-ink);
+  font-size: 13px;
+  font-weight: 900;
+  white-space: nowrap;
+  animation: rise 0.2s ease-out;
+}
+
+.sky-banner.is-lose {
+  background: rgba(255, 77, 109, 0.95);
+  color: #fff;
+}
+
+.sky-banner.is-idle {
+  background: rgba(7, 17, 25, 0.85);
+  color: var(--muted);
+}
+
+.sky-rules {
+  padding: 9px 10px;
+  border-radius: var(--r);
+  background: var(--input);
+  font-size: 11.5px;
+  font-weight: 600;
+  line-height: 1.45;
+  color: var(--muted);
+}

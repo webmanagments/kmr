@@ -2,6 +2,7 @@ import {useEffect, useRef, useState} from 'react';
 import {useFlash, useSettler} from '../lib/hooks';
 import {fmtCoins, money, randInt, reducedMotion} from '../lib/util';
 import {toast, useWallet, wallet} from '../lib/wallet';
+import {AutoRow, AutoSheet, useAutoBet} from '../ui/auto';
 import {BetAmount, PlayButton} from '../ui/controls';
 import {GameLayout, WinPopup, type WinInfo} from '../ui/game';
 import {Coin, Undo} from '../ui/icons';
@@ -111,13 +112,14 @@ export default function Roulette() {
   };
 
   const shown = rolling ?? result;
+  const auto = useAutoBet({game: 'roulette', idle: !busy, trigger: spin});
 
   return (
     <GameLayout
       title="Roulette"
       sidebar={
         <>
-          <BetAmount locked={busy} label="Chip Value" />
+          <BetAmount locked={busy || auto.running} label="Chip Value" />
           <div className={`rl-result is-${shown === null ? 'none' : color(shown)}${rolling !== null ? ' is-rolling' : ''}`} aria-live="polite">
             {shown === null ? '?' : shown}
           </div>
@@ -142,9 +144,12 @@ export default function Roulette() {
               Clear
             </button>
           </div>
-          <PlayButton onClick={spin} disabled={busy || !bets.length} autoFocus={false} sub={bets.length ? undefined : 'Place chips on the board'}>
-            {busy ? 'Spinning…' : 'Spin'}
-          </PlayButton>
+          <AutoRow auto={auto}>
+            <PlayButton onClick={spin} disabled={busy || !bets.length} autoFocus={false} sub={bets.length ? undefined : 'Place chips on the board'}>
+              {busy ? 'Spinning…' : 'Spin'}
+            </PlayButton>
+          </AutoRow>
+          <AutoSheet auto={auto} note={bets.length ? `Repeats your ${fmtCoins(totalBet)} of chips every spin.` : 'Place your chips on the board first.'} />
         </>
       }
       stage={

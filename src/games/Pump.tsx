@@ -3,7 +3,8 @@ import {useFlash, usePersistent} from '../lib/hooks';
 import {focusDefault} from '../lib/spatial';
 import {HOUSE, choose, fmtCoins, fmtMult, money, shuffle} from '../lib/util';
 import {useWallet, wallet} from '../lib/wallet';
-import {BetAmount, PlayButton, Readout, Segmented} from '../ui/controls';
+import {AutoRow, AutoSheet, useAutoBet} from '../ui/auto';
+import {BetAmount, ListStepper, PlayButton, Readout, Segmented} from '../ui/controls';
 import {GameLayout, WinPopup, type WinInfo} from '../ui/game';
 import {Coin} from '../ui/icons';
 import './games.css';
@@ -29,6 +30,7 @@ export default function Pump() {
   const [round, setRound] = usePersistent<Round>('pump', {phase: 'idle', diff: 'medium', stake: 0, popAt: 0, pumps: 0, popped: false});
   const [win, flashWin] = useFlash<WinInfo>();
   const [puff, setPuff] = useState(0);
+  const [autoPumps, setAutoPumps] = useState(3);
   const playing = round.phase === 'playing';
   const maxPumps = STEPS - POPS[round.diff];
   const mult = pumpMult(round.diff, round.pumps);
@@ -72,6 +74,15 @@ export default function Pump() {
     else setRound(next);
   };
 
+  const auto = useAutoBet({game: 'pump', idle: !playing, trigger: start});
+  // Auto: pump to the chosen count, then cash out.
+  useEffect(() => {
+    if (!auto.running || !playing) return;
+    const t = setTimeout(() => (round.pumps >= Math.min(autoPumps, maxPumps) ? cashout() : pump()), auto.stepDelay);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [auto.running, playing, round.pumps]);
+
   const size = 1 + Math.min(round.pumps, 24) * 0.035;
   const ladder = Array.from({length: 5}, (_, i) => round.pumps + i + 1).filter(k => k <= maxPumps);
 
@@ -80,12 +91,12 @@ export default function Pump() {
       title="Pump"
       sidebar={
         <>
-          <BetAmount locked={playing} />
+          <BetAmount locked={playing || auto.running} />
           <Segmented
             label="Difficulty"
             value={round.diff}
             onChange={d => setRound({phase: 'idle', diff: d, stake: 0, popAt: 0, pumps: 0, popped: false})}
-            disabled={playing}
+            disabled={playing || auto.running}
             options={[
               {value: 'easy', label: 'Easy'},
               {value: 'medium', label: 'Med', aria: 'Medium'},
@@ -104,17 +115,32 @@ export default function Pump() {
             }
           />
           {playing ? (
-            <>
-              <PlayButton onClick={pump} sub={`Next ${fmtMult(pumpMult(round.diff, round.pumps + 1))}`}>
-                Pump
-              </PlayButton>
-              <button type="button" className="ghost-btn pump-cash" onClick={() => cashout()} disabled={round.pumps === 0}>
-                Cashout {round.pumps ? fmtCoins(round.stake * mult) : ''}
-              </button>
-            </>
+            auto.running ? (
+              <AutoRow auto={auto}>{null}</AutoRow>
+            ) : (
+              <>
+                <PlayButton onClick={pump} sub={`Next ${fmtMult(pumpMult(round.diff, round.pumps + 1))}`}>
+                  Pump
+                </PlayButton>
+                <button type="button" className="ghost-btn pump-cash" onClick={() => cashout()} disabled={round.pumps === 0}>
+                  Cashout {round.pumps ? fmtCoins(round.stake * mult) : ''}
+                </button>
+              </>
+            )
           ) : (
-            <PlayButton onClick={start}>Bet</PlayButton>
+            <AutoRow auto={auto}>
+              <PlayButton onClick={start}>Bet</PlayButton>
+            </AutoRow>
           )}
+          <AutoSheet auto={auto}>
+            <ListStepper
+              label="Cash out after"
+              values={Array.from({length: maxPumps}, (_, i) => i + 1)}
+              value={Math.min(autoPumps, maxPumps)}
+              onChange={setAutoPumps}
+              render={v => `${v} pump${v > 1 ? 's' : ''} · ${fmtMult(pumpMult(round.diff, v))}`}
+            />
+          </AutoSheet>
         </>
       }
       stage={

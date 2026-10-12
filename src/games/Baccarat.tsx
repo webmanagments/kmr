@@ -3,6 +3,7 @@ import {baccaratTotal, baccaratValue, drawCard} from '../lib/cards';
 import {useFlash, useSettler} from '../lib/hooks';
 import {fmtCoins, money, reducedMotion} from '../lib/util';
 import {toast, useWallet, wallet} from '../lib/wallet';
+import {AutoRow, AutoSheet, useAutoBet} from '../ui/auto';
 import {BetAmount, PlayButton} from '../ui/controls';
 import {GameLayout, PlayingCard, WinPopup, type CardT, type WinInfo} from '../ui/game';
 import {Coin, Undo} from '../ui/icons';
@@ -103,6 +104,8 @@ export default function Baccarat() {
     }, h.order.length * step + 300);
   };
 
+  const auto = useAutoBet({game: 'baccarat', idle: !busy, trigger: deal, delay: 700});
+
   // Map deal order to how many cards of each side are visible.
   const visible = (side: 'p' | 'b') => (hand ? hand.order.slice(0, shown).filter(x => x === side).length : 0);
   const pCards = hand ? hand.p.slice(0, visible('p')) : [];
@@ -113,7 +116,7 @@ export default function Baccarat() {
       title="Baccarat"
       sidebar={
         <>
-          <BetAmount locked={busy} label="Chip Value" />
+          <BetAmount locked={busy || auto.running} label="Chip Value" />
           <div className="rl-total bac-total">
             <span>Total bet</span>
             <b>
@@ -129,9 +132,12 @@ export default function Baccarat() {
             </button>
           </div>
           <div className="bac-rules">Player pays 1:1 · Banker 0.95:1 · Tie 8:1 (Player & Banker push on a tie)</div>
-          <PlayButton onClick={deal} disabled={busy || !bets.length} autoFocus={false} sub={bets.length ? undefined : 'Place chips first'}>
-            {busy ? 'Dealing…' : 'Deal'}
-          </PlayButton>
+          <AutoRow auto={auto}>
+            <PlayButton onClick={deal} disabled={busy || !bets.length} autoFocus={false} sub={bets.length ? undefined : 'Place chips first'}>
+              {busy ? 'Dealing…' : 'Deal'}
+            </PlayButton>
+          </AutoRow>
+          <AutoSheet auto={auto} note={bets.length ? `Repeats your ${fmtCoins(total)} of chips every hand.` : 'Place your chips first.'} />
         </>
       }
       stage={

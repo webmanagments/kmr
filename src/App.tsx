@@ -50,7 +50,10 @@ export default function App() {
     // Input first, so nothing below can stop the Neural Band from working.
     const uninstall = installSpatialNav(() => {
       const n = navRef.current;
-      if (n.modal) {
+      if ((history.state as {sheet?: string} | null)?.sheet) {
+        // A game's settings sheet is open: Back just closes it (the sheet restores focus).
+        history.back();
+      } else if (n.modal) {
         // Hand focus back synchronously so it is never dropped while the modal closes.
         const view = document.querySelector<HTMLElement>('.view');
         if (view) view.inert = false;

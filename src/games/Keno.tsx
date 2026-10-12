@@ -2,6 +2,7 @@ import {useEffect, useRef, useState} from 'react';
 import {useFlash, useSettler} from '../lib/hooks';
 import {HOUSE, choose, fmtMult, money, shuffle} from '../lib/util';
 import {useWallet, wallet} from '../lib/wallet';
+import {AutoRow, AutoSheet, useAutoBet} from '../ui/auto';
 import {BetAmount, PlayButton, Segmented} from '../ui/controls';
 import {GameLayout, WinPopup, type WinInfo} from '../ui/game';
 import {GemIcon, Shuffle, Undo} from '../ui/icons';
@@ -93,12 +94,14 @@ export default function Keno() {
     }, REVEAL_MS * DRAWN + 120);
   };
 
+  const auto = useAutoBet({game: 'keno', idle: !busy, trigger: bet});
+
   return (
     <GameLayout
       title="Keno"
       sidebar={
         <>
-          <BetAmount locked={busy} />
+          <BetAmount locked={busy || auto.running} />
           <Segmented
             label="Risk"
             value={risk}
@@ -133,9 +136,12 @@ export default function Keno() {
               {picks.length}/{MAX_PICKS}
             </b>
           </div>
-          <PlayButton onClick={bet} disabled={busy || !picks.length} sub={picks.length ? `Top prize ${fmtMult(table[table.length - 1] ?? 0)}` : 'Pick 1–10 numbers'}>
-            Bet
-          </PlayButton>
+          <AutoRow auto={auto}>
+            <PlayButton onClick={bet} disabled={busy || !picks.length} sub={picks.length ? `Top prize ${fmtMult(table[table.length - 1] ?? 0)}` : 'Pick 1–10 numbers'}>
+              Bet
+            </PlayButton>
+          </AutoRow>
+          <AutoSheet auto={auto} note={picks.length ? `Plays your ${picks.length} picked numbers every round.` : 'Pick your numbers first (or use Auto pick).'} />
         </>
       }
       stage={

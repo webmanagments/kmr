@@ -58,6 +58,19 @@ function set(next: WalletState) {
   }, 250);
 }
 
+// Save right away if the app is hidden or closed, so the last result is never lost.
+function flush() {
+  if (saveTimer) {
+    clearTimeout(saveTimer);
+    saveTimer = null;
+    saveJSON(KEY, state);
+  }
+}
+if (typeof window !== 'undefined') {
+  window.addEventListener('pagehide', flush);
+  document.addEventListener('visibilitychange', () => document.hidden && flush());
+}
+
 function subscribe(l: () => void) {
   listeners.add(l);
   return () => listeners.delete(l);

@@ -2,6 +2,7 @@ import {useState} from 'react';
 import {useFlash, useSettler} from '../lib/hooks';
 import {fmtMult, money, randInt} from '../lib/util';
 import {useWallet, wallet} from '../lib/wallet';
+import {AutoRow, AutoSheet, useAutoBet} from '../ui/auto';
 import {BetAmount, PlayButton} from '../ui/controls';
 import {GameLayout, HistoryStrip, WinPopup, type WinInfo} from '../ui/game';
 import './games.css';
@@ -78,6 +79,8 @@ export default function Diamonds() {
     }, 5 * 110 + 200);
   };
 
+  const auto = useAutoBet({game: 'diamonds', idle: !busy, trigger: bet});
+
   // Which gems belong to the winning pattern (any colour appearing 2+ times).
   const counts = new Map<number, number>();
   gems?.forEach(g => counts.set(g, (counts.get(g) ?? 0) + 1));
@@ -87,11 +90,14 @@ export default function Diamonds() {
       title="Diamonds"
       sidebar={
         <>
-          <BetAmount locked={busy} />
+          <BetAmount locked={busy || auto.running} />
           <div className="dia-note">Match colours across five gems. Bigger sets pay more.</div>
-          <PlayButton onClick={bet} disabled={busy}>
-            Bet
-          </PlayButton>
+          <AutoRow auto={auto}>
+            <PlayButton onClick={bet} disabled={busy}>
+              Bet
+            </PlayButton>
+          </AutoRow>
+          <AutoSheet auto={auto} />
         </>
       }
       stage={

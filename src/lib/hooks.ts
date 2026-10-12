@@ -31,7 +31,7 @@ export function useSettler() {
 }
 
 /** State that survives leaving the game and reloading (for in-progress rounds). */
-export function usePersistent<T>(key: string, initial: T): [T, (v: T | ((p: T) => T)) => void] {
+export function usePersistent<T>(key: string, initial: T): [T, (v: T | ((p: T) => T)) => void, () => T] {
   const storageKey = `kmr.round.${key}`;
   const [value, setValue] = useState<T>(() => loadJSON<T>(storageKey, initial));
   const ref = useRef(value);
@@ -45,7 +45,9 @@ export function usePersistent<T>(key: string, initial: T): [T, (v: T | ((p: T) =
     },
     [storageKey],
   );
-  return [value, set];
+  // Latest value, for deferred jobs that must not act on a round that has moved on.
+  const get = useCallback(() => ref.current, []);
+  return [value, set, get];
 }
 
 /** Interval that only runs while `active`, cleared on unmount or when the page hides. */

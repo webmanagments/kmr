@@ -2,6 +2,7 @@ import {useMemo, useState} from 'react';
 import {useFlash, useSettler} from '../lib/hooks';
 import {HOUSE, fmtMult, money, rand, reducedMotion, weightedIndex} from '../lib/util';
 import {useWallet, wallet} from '../lib/wallet';
+import {AutoRow, AutoSheet, useAutoBet} from '../ui/auto';
 import {BetAmount, PlayButton, Segmented} from '../ui/controls';
 import {GameLayout, HistoryStrip, WinPopup, type WinInfo} from '../ui/game';
 import './games.css';
@@ -104,13 +105,14 @@ export default function Cases() {
   };
 
   const preview = strip.length ? strip : def.mults.concat(def.mults).slice(0, 12);
+  const auto = useAutoBet({game: 'cases', idle: !busy, trigger: open});
 
   return (
     <GameLayout
       title="Cases"
       sidebar={
         <>
-          <BetAmount locked={busy} label="Case Price" />
+          <BetAmount locked={busy || auto.running} label="Case Price" />
           <Segmented
             label="Case"
             value={cid}
@@ -127,9 +129,12 @@ export default function Cases() {
             <span>Best drop</span>
             <b>{fmtMult(Math.max(...def.mults))}</b>
           </div>
-          <PlayButton onClick={open} disabled={busy}>
-            {busy ? 'Opening…' : 'Open Case'}
-          </PlayButton>
+          <AutoRow auto={auto}>
+            <PlayButton onClick={open} disabled={busy}>
+              {busy ? 'Opening…' : 'Open Case'}
+            </PlayButton>
+          </AutoRow>
+          <AutoSheet auto={auto} />
         </>
       }
       stage={

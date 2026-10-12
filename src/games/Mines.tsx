@@ -1,8 +1,9 @@
-import {useEffect, useRef} from 'react';
+import {useEffect, useRef, useState} from 'react';
 import {useFlash, usePersistent} from '../lib/hooks';
 import {focusDefault, focusEl} from '../lib/spatial';
 import {HOUSE, choose, fmtCoins, fmtMult, money, randInt, shuffle} from '../lib/util';
 import {useWallet, wallet} from '../lib/wallet';
+import {AutoRow, AutoSheet, useAutoBet} from '../ui/auto';
 import {BetAmount, ListStepper, PlayButton, Readout} from '../ui/controls';
 import {GameLayout, WinPopup, type WinInfo} from '../ui/game';
 import {BombIcon, Coin, GemIcon, Shuffle} from '../ui/icons';
@@ -32,6 +33,7 @@ export default function Mines() {
   const {betAmount} = useWallet();
   const [round, setRound] = usePersistent<Round>('mines', fresh(3));
   const [win, flashWin] = useFlash<WinInfo>();
+  const [autoGems, setAutoGems] = useState(3);
   const gridRef = useRef<HTMLDivElement>(null);
   const prevPhase = useRef(round.phase);
 
@@ -45,9 +47,10 @@ export default function Mines() {
     if (prevPhase.current === round.phase) return;
     prevPhase.current = round.phase;
     requestAnimationFrame(() => {
-      if (round.phase === 'playing') focusEl(gridRef.current?.querySelector<HTMLElement>('button[data-i="12"]') ?? null);
+      if (round.phase === 'playing' && !auto.running) focusEl(gridRef.current?.querySelector<HTMLElement>('button[data-i="12"]') ?? null);
       else focusDefault();
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [round.phase]);
 
   const start = () => {
@@ -90,19 +93,34 @@ export default function Mines() {
   };
 
   const over = round.phase === 'over';
+  const maxGems = 25 - round.mines;
+  const auto = useAutoBet({game: 'mines', idle: !playing, trigger: start});
+  // Auto: reveal random tiles until the chosen number of gems, then cash out.
+  useEffect(() => {
+    if (!auto.running || !playing) return;
+    const t = setTimeout(() => {
+      if (picks >= Math.min(autoGems, maxGems)) cashout();
+      else {
+        const hidden = Array.from({length: 25}, (_, i) => i).filter(i => !round.revealed.includes(i));
+        reveal(hidden[randInt(hidden.length)]);
+      }
+    }, auto.stepDelay);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [auto.running, playing, picks]);
 
   return (
     <GameLayout
       title="Mines"
       sidebar={
         <>
-          <BetAmount locked={playing} />
+          <BetAmount locked={playing || auto.running} />
           <ListStepper
             label="Mines"
             values={COUNTS}
             value={round.mines}
             onChange={m => setRound(fresh(m))}
-            disabled={playing}
+            disabled={playing || auto.running}
             aside={`${25 - round.mines} gems`}
             tone="red"
           />
@@ -118,20 +136,37 @@ export default function Mines() {
                   </>
                 }
               />
-              <button type="button" className="ghost-btn" onClick={randomPick}>
-                <Shuffle size={15} />
-                Pick random tile
-              </button>
-              <PlayButton onClick={() => cashout()} disabled={picks === 0} sub={picks ? `${fmtCoins(round.stake * mult)}` : 'Reveal a gem first'}>
-                Cashout
-              </PlayButton>
+              {auto.running ? (
+                <AutoRow auto={auto}>{null}</AutoRow>
+              ) : (
+                <>
+                  <button type="button" className="ghost-btn" onClick={randomPick}>
+                    <Shuffle size={15} />
+                    Pick random tile
+                  </button>
+                  <PlayButton onClick={() => cashout()} disabled={picks === 0} sub={picks ? `${fmtCoins(round.stake * mult)}` : 'Reveal a gem first'}>
+                    Cashout
+                  </PlayButton>
+                </>
+              )}
             </>
           ) : (
             <>
               <Readout label="First Gem Pays" value={fmtMult(minesMult(round.mines, 1))} />
-              <PlayButton onClick={start}>Bet</PlayButton>
+              <AutoRow auto={auto}>
+                <PlayButton onClick={start}>Bet</PlayButton>
+              </AutoRow>
             </>
           )}
+          <AutoSheet auto={auto}>
+            <ListStepper
+              label="Cash out after"
+              values={Array.from({length: maxGems}, (_, i) => i + 1)}
+              value={Math.min(autoGems, maxGems)}
+              onChange={setAutoGems}
+              render={v => `${v} gem${v > 1 ? 's' : ''} · ${fmtMult(minesMult(round.mines, v))}`}
+            />
+          </AutoSheet>
         </>
       }
       stage={

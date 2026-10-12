@@ -4,6 +4,7 @@ import {useFlash, usePersistent, useSettler} from '../lib/hooks';
 import {focusDefault, focusEl} from '../lib/spatial';
 import {money} from '../lib/util';
 import {useWallet, wallet} from '../lib/wallet';
+import {AutoRow, AutoSheet, useAutoBet} from '../ui/auto';
 import {BetAmount, PlayButton} from '../ui/controls';
 import {GameLayout, PlayingCard, WinPopup, type CardT, type WinInfo} from '../ui/game';
 import './games.css';
@@ -29,6 +30,24 @@ interface Round {
 
 const EMPTY: Round = {phase: 'idle', hands: [], active: 0, dealer: [], shown: 0};
 
+/** Simplified basic strategy for Auto Bet (dealer stands on 17, no surrender). */
+function basicStrategy(h: Hand, up: CardT, canDouble: boolean, canSplit: boolean): 'hit' | 'stand' | 'double' | 'split' {
+  const {total, soft} = handTotal(h.cards);
+  const d = up.rank === 1 ? 11 : Math.min(10, up.rank);
+  if (canSplit && (h.cards[0].rank === 1 || h.cards[0].rank === 8)) return 'split';
+  if (soft) {
+    if (total >= 19) return 'stand';
+    if (total === 18) return d >= 9 ? 'hit' : 'stand';
+    return 'hit';
+  }
+  if (total >= 17) return 'stand';
+  if (total >= 13) return d <= 6 ? 'stand' : 'hit';
+  if (total === 12) return d >= 4 && d <= 6 ? 'stand' : 'hit';
+  if (total === 11) return canDouble ? 'double' : 'hit';
+  if (total === 10) return canDouble && d <= 9 ? 'double' : 'hit';
+  return 'hit';
+}
+
 function TotalBadge({cards, hidden = false, result, allowBJ = true}: {cards: CardT[]; hidden?: boolean; result?: Result; allowBJ?: boolean}) {
   if (!cards.length) return null;
   const {total, soft} = handTotal(hidden ? cards.slice(0, 1) : cards);
@@ -48,7 +67,8 @@ export default function Blackjack() {
   useEffect(() => {
     if (prevPhase.current === round.phase) return;
     prevPhase.current = round.phase;
-    requestAnimationFrame(() => (round.phase === 'player' ? focusEl(hitRef.current) : round.phase !== 'dealer' && focusDefault()));
+    requestAnimationFrame(() => (round.phase === 'player' && !auto.running ? focusEl(hitRef.current) : round.phase !== 'dealer' && focusDefault()));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [round.phase]);
 
   const finish = (r: Round) => {
@@ -151,12 +171,27 @@ export default function Blackjack() {
   const playing = round.phase === 'player';
   const dealerHidden = round.phase === 'player' || (round.phase === 'dealer' && round.shown < 2);
 
+  const auto = useAutoBet({game: 'blackjack', idle: (round.phase === 'idle' || round.phase === 'done') && !revealing, trigger: deal, delay: 700});
+  // Auto plays each hand with simplified basic strategy.
+  useEffect(() => {
+    if (!auto.running || !playing || !hand) return;
+    const t = setTimeout(() => {
+      const move = basicStrategy(hand, round.dealer[0], canDouble, canSplit);
+      if (move === 'split') split();
+      else if (move === 'double') double();
+      else if (move === 'hit') hit();
+      else stand();
+    }, 520);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [auto.running, playing, round.active, hand?.cards.length, round.hands.length]);
+
   return (
     <GameLayout
       title="Blackjack"
       sidebar={
         <>
-          <BetAmount locked={round.phase === 'player' || round.phase === 'dealer'} />
+          <BetAmount locked={round.phase === 'player' || round.phase === 'dealer' || auto.running} />
           <div className="bj-actions">
             <button ref={hitRef} type="button" className="bj-btn" onClick={hit} disabled={!playing}>
               Hit
@@ -171,9 +206,12 @@ export default function Blackjack() {
               Double
             </button>
           </div>
-          <PlayButton onClick={deal} disabled={playing || revealing || round.phase === 'dealer'} autoFocus={!playing}>
-            {round.phase === 'done' ? 'Deal Again' : 'Deal'}
-          </PlayButton>
+          <AutoRow auto={auto}>
+            <PlayButton onClick={deal} disabled={playing || revealing || round.phase === 'dealer'} autoFocus={!playing}>
+              {round.phase === 'done' ? 'Deal Again' : 'Deal'}
+            </PlayButton>
+          </AutoRow>
+          <AutoSheet auto={auto} note="Plays every hand with basic strategy (hit, stand, double 10–11, split aces and eights)." />
         </>
       }
       stage={

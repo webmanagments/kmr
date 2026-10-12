@@ -2,6 +2,7 @@ import {useEffect, useRef, useState} from 'react';
 import {useFlash} from '../lib/hooks';
 import {HOUSE, fmtCoins, fmtMult, money, rand} from '../lib/util';
 import {useWallet, wallet} from '../lib/wallet';
+import {AutoRow, AutoSheet, useAutoBet} from '../ui/auto';
 import {BetAmount, ListStepper, PlayButton, ProfitOnWin} from '../ui/controls';
 import {GameLayout, HistoryStrip, WinPopup, type WinInfo} from '../ui/game';
 import './games.css';
@@ -118,6 +119,7 @@ export default function Crash() {
   const flying = view.phase === 'flying';
   const m = view.phase === 'crashed' ? view.crashAt : multAt(view.elapsed);
   const canCash = flying && !view.cashedAt;
+  const autoBet = useAutoBet({game: 'crash', idle: !flying, trigger: bet});
 
   // Graph geometry.
   const W = 340;
@@ -141,24 +143,27 @@ export default function Crash() {
       title="Crash"
       sidebar={
         <>
-          <BetAmount locked={flying} />
+          <BetAmount locked={flying || autoBet.running} />
           <ListStepper
             label="Auto Cashout"
             values={AUTO}
             value={auto}
             onChange={setAuto}
             render={v => (v ? fmtMult(v) : 'Off')}
-            disabled={flying}
+            disabled={flying || autoBet.running}
             tone="green"
           />
           <ProfitOnWin mult={auto || 1} label={auto ? 'Profit at Auto' : 'Profit on Win'} />
-          {flying ? (
-            <PlayButton onClick={() => cashout(multAt(performance.now() - live.current.start))} disabled={!canCash} tone="gold" sub={canCash ? fmtCoins(live.current.stake * m) : `Cashed at ${fmtMult(view.cashedAt ?? 1)}`}>
-              {canCash ? 'Cash Out' : 'Cashed Out'}
-            </PlayButton>
-          ) : (
-            <PlayButton onClick={bet}>Bet</PlayButton>
-          )}
+          <AutoRow auto={autoBet}>
+            {flying ? (
+              <PlayButton onClick={() => cashout(multAt(performance.now() - live.current.start))} disabled={!canCash} tone="gold" sub={canCash ? fmtCoins(live.current.stake * m) : `Cashed at ${fmtMult(view.cashedAt ?? 1)}`}>
+                {canCash ? 'Cash Out' : 'Cashed Out'}
+              </PlayButton>
+            ) : (
+              <PlayButton onClick={bet}>Bet</PlayButton>
+            )}
+          </AutoRow>
+          <AutoSheet auto={autoBet} note={auto ? `Each round cashes out at ${fmtMult(auto)} (your Auto Cashout).` : 'Auto Cashout is Off, so each round rides until it crashes. Set one first for wins.'} />
         </>
       }
       stage={

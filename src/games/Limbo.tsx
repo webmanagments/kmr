@@ -2,6 +2,7 @@ import {useEffect, useRef, useState} from 'react';
 import {useFlash, useSettler} from '../lib/hooks';
 import {HOUSE, fmtMult, money, rand} from '../lib/util';
 import {useWallet, wallet} from '../lib/wallet';
+import {AutoRow, AutoSheet, useAutoBet} from '../ui/auto';
 import {BetAmount, ListStepper, PlayButton, ProfitOnWin, Readout} from '../ui/controls';
 import {GameLayout, HistoryStrip, WinPopup, type WinInfo} from '../ui/game';
 import './games.css';
@@ -54,19 +55,23 @@ export default function Limbo() {
   };
 
   const chance = (HOUSE / target) * 100;
+  const auto = useAutoBet({game: 'limbo', idle: !busy, trigger: bet});
 
   return (
     <GameLayout
       title="Limbo"
       sidebar={
         <>
-          <BetAmount locked={busy} />
+          <BetAmount locked={busy || auto.running} />
           <ListStepper label="Target Multiplier" values={TARGETS} value={target} onChange={setTarget} render={v => fmtMult(v)} disabled={busy} />
           <Readout label="Win Chance" value={`${chance < 0.01 ? chance.toPrecision(2) : chance.toFixed(2)}%`} />
           <ProfitOnWin mult={target} />
-          <PlayButton onClick={bet} disabled={busy}>
-            Bet
-          </PlayButton>
+          <AutoRow auto={auto}>
+            <PlayButton onClick={bet} disabled={busy}>
+              Bet
+            </PlayButton>
+          </AutoRow>
+          <AutoSheet auto={auto} />
         </>
       }
       stage={

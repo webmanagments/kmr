@@ -2,6 +2,7 @@ import {useState, type ReactNode} from 'react';
 import {useFlash, useSettler} from '../lib/hooks';
 import {money, reducedMotion, weightedIndex} from '../lib/util';
 import {useWallet, wallet} from '../lib/wallet';
+import {AutoRow, AutoSheet, useAutoBet} from '../ui/auto';
 import {BetAmount, PlayButton, Readout} from '../ui/controls';
 import {GameLayout, WinPopup, type WinInfo} from '../ui/game';
 import './games.css';
@@ -139,6 +140,8 @@ export default function Slots() {
     }, (fast ? 300 : STOPS[2]) + 120);
   };
 
+  const auto = useAutoBet({game: 'slots', idle: !busy, trigger: spin, delay: 300});
+
   const winCells = new Set<string>();
   wins.forEach(li => {
     const cells = LINES[li];
@@ -152,12 +155,15 @@ export default function Slots() {
       title="Lucky 7s"
       sidebar={
         <>
-          <BetAmount locked={busy} label="Total Bet" />
+          <BetAmount locked={busy || auto.running} label="Total Bet" />
           <Readout label="5 Lines · Per Line" value={(betAmount / LINES.length).toFixed(2)} />
           <Readout label="Last Win" tone={lastWin > 0 ? 'green' : undefined} value={lastWin.toFixed(2)} />
-          <PlayButton onClick={spin} disabled={busy}>
-            {busy ? 'Spinning…' : 'Spin'}
-          </PlayButton>
+          <AutoRow auto={auto}>
+            <PlayButton onClick={spin} disabled={busy}>
+              {busy ? 'Spinning…' : 'Spin'}
+            </PlayButton>
+          </AutoRow>
+          <AutoSheet auto={auto} />
         </>
       }
       stage={

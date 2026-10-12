@@ -2,7 +2,7 @@
 import {chromium} from 'playwright';
 const base = process.argv[2] ?? 'http://127.0.0.1:4173';
 const ROUNDS = Number(process.argv[3] ?? 60);
-const IDS = ['crash', 'plinko', 'mines', 'dice', 'limbo', 'towers', 'hilo', 'keno', 'wheel', 'pump', 'diamonds', 'coinflip', 'cases', 'slide', 'blackjack', 'roulette', 'baccarat', 'videopoker', 'dragontiger', 'slots', 'horses'];
+const IDS = ['skyrun', 'chicken', 'tarot', 'penalty', 'crash', 'plinko', 'mines', 'dice', 'limbo', 'towers', 'hilo', 'keno', 'wheel', 'pump', 'diamonds', 'coinflip', 'cases', 'slide', 'blackjack', 'roulette', 'baccarat', 'videopoker', 'dragontiger', 'slots', 'horses'];
 const browser = await chromium.launch({headless: true, executablePath: '/opt/google/chrome/chrome'});
 const page = await browser.newPage({viewport: {width: 600, height: 600}});
 const errors = [];
@@ -44,7 +44,10 @@ for (const id of IDS) {
       continue;
     }
     const k = keys[Math.floor(Math.random() * keys.length)];
-    const onWallet = await page.evaluate(() => document.activeElement?.classList.contains('wallet-btn'));
+    const onWallet = await page.evaluate(() => {
+      const a = document.activeElement;
+      return a?.classList.contains('wallet-btn') || /^(Max|2×)$/.test(a?.textContent?.trim() ?? '') || /Maximum|Double/i.test(a?.getAttribute('aria-label') ?? '');
+    });
     if (k === 'Enter' && onWallet) continue;
     await page.keyboard.press(k);
     presses++;
@@ -62,14 +65,19 @@ const audit = await page.evaluate(() => {
   const w = JSON.parse(localStorage.getItem('kmr.wallet.v2'));
   // Stakes still riding in resumable rounds (debited, not yet settled).
   let open = 0;
-  for (const g of ['mines', 'towers', 'hilo', 'pump', 'coinflip', 'videopoker']) {
+  for (const g of ['mines', 'towers', 'hilo', 'pump', 'coinflip', 'videopoker', 'chicken', 'penalty']) {
     const r = JSON.parse(localStorage.getItem(`kmr.round.${g}`) || 'null');
     if (r && (r.phase === 'playing' || r.phase === 'dealt')) open += r.stake;
   }
   const bj = JSON.parse(localStorage.getItem('kmr.round.blackjack') || 'null');
   if (bj && (bj.phase === 'player' || bj.phase === 'dealer')) open += bj.hands.reduce((s, h) => s + h.stake, 0);
+  const rounds = {};
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (k.startsWith('kmr.round.')) { const r = JSON.parse(localStorage.getItem(k)); rounds[k.slice(10)] = r?.phase + ':' + (r?.stake ?? '') ; }
+  }
   const bonus = w.lastBonus ? 2500 : 0;
-  return {balance: w.balance, profit: w.profit, bets: w.bets, wagered: w.wagered, open, bonus, expected: Math.round((10000 + bonus + w.profit - open) * 100) / 100};
+  return {balance: w.balance, profit: w.profit, bets: w.bets, wagered: w.wagered, open, bonus, rounds, expected: Math.round((10000 + bonus + w.profit - open) * 100) / 100};
 });
 console.log(JSON.stringify({presses, ...audit, reconciles: Math.abs(audit.balance - audit.expected) < 0.011, errors}, null, 2));
 await browser.close();

@@ -1,9 +1,10 @@
-import {useEffect, useRef} from 'react';
+import {useEffect, useRef, useState} from 'react';
 import {useFlash, usePersistent} from '../lib/hooks';
 import {focusDefault, focusEl} from '../lib/spatial';
 import {HOUSE, fmtCoins, fmtMult, money, randInt} from '../lib/util';
 import {useWallet, wallet} from '../lib/wallet';
-import {BetAmount, PlayButton, Readout} from '../ui/controls';
+import {AutoRow, AutoSheet, useAutoBet} from '../ui/auto';
+import {BetAmount, ListStepper, PlayButton, Readout} from '../ui/controls';
 import {GameLayout, PlayingCard, RANKS, WinPopup, type CardT, type WinInfo} from '../ui/game';
 import {Coin} from '../ui/icons';
 import './games.css';
@@ -53,6 +54,7 @@ export default function HiLo() {
   const {betAmount} = useWallet();
   const [round, setRound] = usePersistent<Round>('hilo', {phase: 'idle', stake: 0, mult: 1, steps: [{card: draw(), guess: 'start', ok: true}]});
   const [win, flashWin] = useFlash<WinInfo>();
+  const [autoWins, setAutoWins] = useState(2);
   const hiRef = useRef<HTMLButtonElement>(null);
   const playing = round.phase === 'playing';
   const current = round.steps[round.steps.length - 1].card;
@@ -62,7 +64,8 @@ export default function HiLo() {
   useEffect(() => {
     if (prevPhase.current === round.phase) return;
     prevPhase.current = round.phase;
-    requestAnimationFrame(() => (round.phase === 'playing' ? focusEl(hiRef.current) : focusDefault()));
+    requestAnimationFrame(() => (round.phase === 'playing' && !auto.running ? focusEl(hiRef.current) : focusDefault()));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [round.phase]);
 
   const start = () => {
@@ -100,13 +103,23 @@ export default function HiLo() {
 
   const lastStep = round.steps[round.steps.length - 1];
   const lost = round.phase === 'over' && !lastStep.ok;
+  const wins = round.steps.filter(s => (s.guess === 'hi' || s.guess === 'lo') && s.ok).length;
+
+  const auto = useAutoBet({game: 'hilo', idle: !playing, trigger: start});
+  // Auto: always take the more likely side, cash out after the chosen number of wins.
+  useEffect(() => {
+    if (!auto.running || !playing) return;
+    const t = setTimeout(() => (wins >= autoWins ? cashout() : guess(opt.hi.p >= opt.lo.p ? 'hi' : 'lo')), auto.stepDelay + 150);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [auto.running, playing, round.steps.length]);
 
   return (
     <GameLayout
       title="HiLo"
       sidebar={
         <>
-          <BetAmount locked={playing} />
+          <BetAmount locked={playing || auto.running} />
           <Readout
             label={`Total Profit (${fmtMult(round.mult)})`}
             tone={playing && round.mult > 1 ? 'green' : undefined}
@@ -128,12 +141,21 @@ export default function HiLo() {
             </div>
           </div>
           {playing ? (
-            <PlayButton onClick={cashout} disabled={round.mult <= 1} autoFocus={false} sub={round.mult > 1 ? fmtCoins(round.stake * round.mult) : 'Win a guess first'}>
-              Cashout
-            </PlayButton>
+            auto.running ? (
+              <AutoRow auto={auto}>{null}</AutoRow>
+            ) : (
+              <PlayButton onClick={cashout} disabled={round.mult <= 1} autoFocus={false} sub={round.mult > 1 ? fmtCoins(round.stake * round.mult) : 'Win a guess first'}>
+                Cashout
+              </PlayButton>
+            )
           ) : (
-            <PlayButton onClick={start}>Bet</PlayButton>
+            <AutoRow auto={auto}>
+              <PlayButton onClick={start}>Bet</PlayButton>
+            </AutoRow>
           )}
+          <AutoSheet auto={auto} note="Always takes the more likely side. Uses your current bet.">
+            <ListStepper label="Cash out after" values={[1, 2, 3, 4, 5, 6, 8, 10]} value={autoWins} onChange={setAutoWins} render={v => `${v} correct guess${v > 1 ? 'es' : ''}`} />
+          </AutoSheet>
         </>
       }
       stage={

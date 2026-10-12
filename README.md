@@ -1,16 +1,20 @@
 # KMR Casino — Meta Ray-Ban Display Web App
 
-21 play-money casino games built for Meta Ray-Ban Display glasses and the Meta Neural Band.
+25 play-money casino games built for Meta Ray-Ban Display glasses and the Meta Neural Band.
 Entertainment only: KMR Coins have no cash value and can't be bought, sold, or redeemed.
 
 ## Games
 
-**KMR Originals (99% return):** Crash, Plinko, Mines, Dice, Limbo, Towers, HiLo, Keno, Wheel, Pump, Diamonds, Coinflip, Cases, Slide
+**KMR Originals (99% return):** Sky Run (plane flight, 97%), Chicken, Tarot, Penalty Shootout, Crash, Plinko, Mines, Dice, Limbo, Towers, HiLo, Keno, Wheel, Pump, Diamonds, Coinflip, Cases, Slide
 **Table games:** Blackjack (3:2, dealer stands on 17, split & double), Roulette (European), Baccarat, Video Poker (9/6 Jacks or Better), Dragon Tiger
 **Slots & Racing:** Lucky 7s (5-line slot), Horse Racing (fresh odds every race)
 
 Player wallet starts at 10,000 coins, with a +2,500 daily bonus and a reset button in Wallet.
-Rounds in progress (Mines, Towers, HiLo, Pump, Coinflip streaks, Blackjack, Video Poker) survive leaving the game or reloading.
+Rounds in progress (Mines, Towers, HiLo, Pump, Chicken, Penalty, Coinflip streaks, Blackjack, Video Poker) survive leaving the game or reloading.
+
+**Auto Bet** is on every game: press the ⟳ AUTO button next to Bet to set the number of bets (5 → ∞),
+stop-on-profit and stop-on-loss limits, plus game-specific options (cash out after N gems / lanes / goals,
+Blackjack basic strategy, Video Poker auto-holds). Back closes the settings; Stop Auto ends it at any time.
 
 ## Controls on the glasses
 
@@ -55,8 +59,9 @@ Quality checks used during development (in `tools/`):
 - `node tools/math-check.mjs` — verifies every game's payout math / return-to-player
 - `node tools/flow.mjs <url>` — drives the app with arrow keys/Enter/Esc only (Neural Band simulation)
 - `node tools/fuzz.mjs <url> 60` — random input across all games, then reconciles the wallet to the cent
+- `node tools/auto-test.mjs <url>` — runs Auto Bet on every game and reconciles the wallet
 - Meta's official gate: `node <meta-wearables-webapp>/plugins/meta-wearables-webapp/skills/ai-glasses-webapp-test/scripts/check-webapp.mjs .`
 
 Built with Meta's custom-UI scaffold (React + Vite + TypeScript) so the look could match a Stake-style design;
 it follows Meta's Web Apps rules: fixed 600×600 canvas, dark canvas for the additive display,
-browser-history Back (max 5 entries), D-pad focus navigation, ~110 KB gzipped, 3 requests on first load.
+browser-history Back (max 5 entries), D-pad focus navigation, ~127 KB gzipped, 4 requests on first load.

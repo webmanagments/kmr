@@ -32,6 +32,74 @@ function Gem({x, y, s = 1, c1, c2, c3}: {x: number; y: number; s?: number; c1: s
 }
 
 const ART: Record<string, ReactNode> = {
+  skyrun: (
+    <>
+      <path d="M4 84h92" stroke="#fff" strokeOpacity=".3" strokeWidth="2" />
+      <path d="M14 80h46l-5 8H20z" fill="#fff" opacity=".85" />
+      <rect x="44" y="72" width="8" height="8" fill="#fff" opacity=".85" />
+      <text x="70" y="30" fontSize="13" fontWeight="900" fill="#ffd34d" fontFamily="system-ui,Arial">
+        ×5
+      </text>
+      <text x="16" y="34" fontSize="12" fontWeight="900" fill="#7dff7f" fontFamily="system-ui,Arial">
+        +2
+      </text>
+      <g transform="translate(52 52) rotate(-14)">
+        <path d="M-30 -2l-9 0 9 4z" fill="#ffd34d" />
+        <path d="M-26 -4l-6-16h12l7 16z" fill="#fff" />
+        <ellipse rx="30" ry="10" fill="#00e701" />
+        <rect x="-24" y="-1" width="44" height="3" fill="#fff" />
+        <ellipse cx="9" cy="-6" rx="10" ry="7" fill="#bff1ff" />
+        <path d="M-6 3h18l-14 15h-13z" fill="#00a800" />
+        <ellipse cx="28" rx="6" ry="6" fill="#fff" />
+      </g>
+    </>
+  ),
+  chicken: (
+    <>
+      {[0, 1, 2].map(i => (
+        <rect key={i} x={10 + i * 30} y="10" width="2" height="80" fill="#fff" opacity=".35" />
+      ))}
+      <g transform="translate(18 0)">
+        <ellipse cx="34" cy="62" rx="20" ry="18" fill="#fff" />
+        <circle cx="44" cy="40" r="12" fill="#fff" />
+        <path d="M40 28c2-6 6-6 7-1 2-4 6-3 6 1" fill="#ff3b5c" />
+        <path d="M56 40l8 3-8 3z" fill="#ff9f1c" />
+        <circle cx="47" cy="38" r="2.4" fill="#0b1822" />
+        <path d="M28 80l-3 10M40 80l3 10" stroke="#ff9f1c" strokeWidth="3.5" strokeLinecap="round" />
+      </g>
+      <rect x="66" y="8" width="22" height="34" rx="6" fill="#3d8bff" />
+      <rect x="70" y="14" width="14" height="8" rx="2" fill="#0b1822" opacity=".6" />
+    </>
+  ),
+  tarot: (
+    <>
+      <g transform="translate(50 52) rotate(-8)">
+        <rect x="-24" y="-38" width="48" height="76" rx="6" fill="#1a0d33" stroke="#ffd34d" strokeWidth="3" />
+        <circle cy="-6" r="13" fill="#ffd34d" />
+        {Array.from({length: 8}, (_, k) => {
+          const a = (k / 8) * Math.PI * 2;
+          return <path key={k} d={`M${Math.cos(a) * 17} ${-6 + Math.sin(a) * 17}L${Math.cos(a) * 22} ${-6 + Math.sin(a) * 22}`} stroke="#ffd34d" strokeWidth="2.5" strokeLinecap="round" />;
+        })}
+        <text y="28" textAnchor="middle" fontSize="11" fontWeight="900" fill="#ffd34d" fontFamily="system-ui,Arial">
+          50×
+        </text>
+      </g>
+    </>
+  ),
+  penalty: (
+    <>
+      <path d="M12 70V22h76v48" fill="none" stroke="#fff" strokeWidth="5" strokeLinejoin="round" />
+      <path d="M16 26h68v44H16z" fill="none" stroke="#fff" strokeOpacity=".25" strokeWidth="1" strokeDasharray="3 4" />
+      <g transform="translate(64 40)">
+        <circle r="13" fill="#fff" />
+        <path d="M0-7l6 4-2 7h-8l-2-7z" fill="#0b1822" />
+      </g>
+      <path d="M30 44l-8-10M42 44l8-10" stroke="#ffd34d" strokeWidth="5" strokeLinecap="round" />
+      <rect x="28" y="42" width="16" height="18" rx="5" fill="#ffd34d" />
+      <circle cx="36" cy="36" r="6" fill="#d9a77c" />
+      <path d="M8 88h84" stroke="#fff" strokeOpacity=".4" strokeWidth="2" />
+    </>
+  ),
   crash: (
     <>
       <path d="M8 88 Q48 84 74 34" stroke="#fff" strokeOpacity=".35" strokeWidth="14" fill="none" strokeLinecap="round" />

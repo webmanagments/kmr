@@ -2,6 +2,7 @@ import {useMemo, useRef, useState} from 'react';
 import {useFlash, useSettler} from '../lib/hooks';
 import {fmtMult, money, rand, randInt, reducedMotion} from '../lib/util';
 import {useWallet, wallet} from '../lib/wallet';
+import {AutoRow, AutoSheet, useAutoBet} from '../ui/auto';
 import {BetAmount, ListStepper, PlayButton, Segmented} from '../ui/controls';
 import {GameLayout, HistoryStrip, WinPopup, type WinInfo} from '../ui/game';
 import './games.css';
@@ -79,6 +80,8 @@ export default function Wheel() {
     }, ms + 60);
   };
 
+  const auto = useAutoBet({game: 'wheel', idle: !busy, trigger: spin});
+
   const arc = (i: number) => {
     const a0 = ((i * seg - 90) * Math.PI) / 180;
     const a1 = (((i + 1) * seg - 90) * Math.PI) / 180;
@@ -91,7 +94,7 @@ export default function Wheel() {
       title="Wheel"
       sidebar={
         <>
-          <BetAmount locked={busy} />
+          <BetAmount locked={busy || auto.running} />
           <Segmented
             label="Risk"
             value={risk}
@@ -116,9 +119,12 @@ export default function Wheel() {
             }}
             disabled={busy}
           />
-          <PlayButton onClick={spin} disabled={busy}>
-            {busy ? 'Spinning…' : 'Spin'}
-          </PlayButton>
+          <AutoRow auto={auto}>
+            <PlayButton onClick={spin} disabled={busy}>
+              {busy ? 'Spinning…' : 'Spin'}
+            </PlayButton>
+          </AutoRow>
+          <AutoSheet auto={auto} />
         </>
       }
       stage={

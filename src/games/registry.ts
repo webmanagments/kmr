@@ -13,6 +13,10 @@ export interface GameDef {
 }
 
 export const GAMES: GameDef[] = [
+  {id: 'skyrun', name: 'Sky Run', cat: 'originals', from: '#38bdf8', to: '#1e3a8a', tag: 'NEW', load: () => import('./SkyRun')},
+  {id: 'chicken', name: 'Chicken', cat: 'originals', from: '#facc15', to: '#c2410c', tag: 'NEW', load: () => import('./Chicken')},
+  {id: 'tarot', name: 'Tarot', cat: 'originals', from: '#a855f7', to: '#3b0764', tag: 'NEW', load: () => import('./Tarot')},
+  {id: 'penalty', name: 'Penalty Shootout', cat: 'originals', from: '#4ade80', to: '#14532d', tag: 'NEW', load: () => import('./Penalty')},
   {id: 'crash', name: 'Crash', cat: 'originals', from: '#ff7a18', to: '#d4145a', tag: 'HOT', load: () => import('./Crash')},
   {id: 'plinko', name: 'Plinko', cat: 'originals', from: '#ff4fd8', to: '#7b2ff7', tag: 'HOT', load: () => import('./Plinko')},
   {id: 'mines', name: 'Mines', cat: 'originals', from: '#1fa2ff', to: '#1a4fc4', tag: 'HOT', load: () => import('./Mines')},
@@ -22,10 +26,10 @@ export const GAMES: GameDef[] = [
   {id: 'hilo', name: 'HiLo', cat: 'originals', from: '#ff5f6d', to: '#a4133c', load: () => import('./HiLo')},
   {id: 'keno', name: 'Keno', cat: 'originals', from: '#22c55e', to: '#0f766e', load: () => import('./Keno')},
   {id: 'wheel', name: 'Wheel', cat: 'originals', from: '#ffc23f', to: '#e8590c', load: () => import('./Wheel')},
-  {id: 'pump', name: 'Pump', cat: 'originals', from: '#ff6fb5', to: '#a21caf', tag: 'NEW', load: () => import('./Pump')},
+  {id: 'pump', name: 'Pump', cat: 'originals', from: '#ff6fb5', to: '#a21caf', load: () => import('./Pump')},
   {id: 'diamonds', name: 'Diamonds', cat: 'originals', from: '#3dd6ff', to: '#2563eb', load: () => import('./Diamonds')},
   {id: 'coinflip', name: 'Coinflip', cat: 'originals', from: '#ffce3d', to: '#b87900', load: () => import('./Coinflip')},
-  {id: 'cases', name: 'Cases', cat: 'originals', from: '#a855f7', to: '#5b21b6', tag: 'NEW', load: () => import('./Cases')},
+  {id: 'cases', name: 'Cases', cat: 'originals', from: '#a855f7', to: '#5b21b6', load: () => import('./Cases')},
   {id: 'slide', name: 'Slide', cat: 'originals', from: '#34d399', to: '#047857', load: () => import('./Slide')},
   {id: 'blackjack', name: 'Blackjack', cat: 'table', from: '#0ea5e9', to: '#1e3a8a', tag: 'HOT', load: () => import('./Blackjack')},
   {id: 'roulette', name: 'Roulette', cat: 'table', from: '#ef4444', to: '#7f1d1d', load: () => import('./Roulette')},

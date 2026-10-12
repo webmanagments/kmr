@@ -1,0 +1,229 @@
+.pen {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  height: 100%;
+}
+
+.pen-pitch {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  padding-top: 18px;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #0b1822 0%, #0f2a1a 45%, #13361f 100%);
+  overflow: hidden;
+}
+
+.pen-pitch::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 44%;
+  background: repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.04) 0 34px, transparent 34px 68px);
+  pointer-events: none;
+}
+
+.pen-goal {
+  position: relative;
+  width: 330px;
+  height: 196px;
+  border: 6px solid #fff;
+  border-bottom: 0;
+  border-radius: 4px 4px 0 0;
+  z-index: 1;
+}
+
+.pen-net {
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.13) 0 1px, transparent 1px 12px),
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.13) 0 1px, transparent 1px 12px);
+}
+
+.pen-zones {
+  position: absolute;
+  inset: 4px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  gap: 6px;
+  z-index: 3;
+}
+
+.pen-zone {
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: transparent;
+}
+
+.pen-target {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.55);
+  box-shadow: inset 0 0 0 6px rgba(255, 255, 255, 0.08);
+  transition: transform 0.12s, border-color 0.12s;
+}
+
+.pen-zone:not(:disabled):focus {
+  background: rgba(255, 255, 255, 0.12);
+  outline-offset: -3px;
+}
+
+.pen-zone:not(:disabled):focus .pen-target {
+  border-color: var(--gold);
+  transform: scale(1.2);
+}
+
+.pen-zone:disabled .pen-target {
+  opacity: 0.35;
+}
+
+.pen-zone.is-goal {
+  background: rgba(0, 231, 1, 0.16);
+}
+
+.pen-zone.is-saved {
+  background: rgba(255, 77, 109, 0.18);
+}
+
+.pen-keeper {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  z-index: 2;
+  margin-left: -40px;
+  transition: transform 0.45s cubic-bezier(0.2, 0.8, 0.3, 1);
+}
+
+/* Keeper poses. Zones: 0 1 2 top, 3 4 5 bottom. */
+.pen-keeper.pose-z0 { transform: translate(-108px, -86px) rotate(-30deg); }
+.pen-keeper.pose-z1 { transform: translate(0, -86px); }
+.pen-keeper.pose-z2 { transform: translate(108px, -86px) rotate(30deg); }
+.pen-keeper.pose-z3 { transform: translate(-112px, 0) rotate(-62deg); }
+.pen-keeper.pose-z4 { transform: translate(0, -4px) scale(1.05); }
+.pen-keeper.pose-z5 { transform: translate(112px, 0) rotate(62deg); }
+.pen-keeper.pose-col0 { transform: translate(-108px, -40px) rotate(-14deg) scaleY(1.25); }
+.pen-keeper.pose-col1 { transform: translate(0, -40px) scaleY(1.25); }
+.pen-keeper.pose-col2 { transform: translate(108px, -40px) rotate(14deg) scaleY(1.25); }
+.pen-keeper.pose-row0 { transform: translate(0, -92px) scaleX(3.4) scaleY(0.9); }
+.pen-keeper.pose-row1 { transform: translate(0, 8px) scaleX(3.4) scaleY(0.75); }
+
+.pen-ball {
+  position: absolute;
+  left: 50%;
+  top: 100%;
+  z-index: 4;
+  margin: 40px 0 0 -17px;
+  transform: var(--to);
+  animation: ball-shot 0.55s cubic-bezier(0.25, 0.7, 0.35, 1) both;
+}
+
+@keyframes ball-shot {
+  from {
+    transform: translate(0, 0) scale(1) rotate(0deg);
+  }
+  to {
+    transform: var(--to) rotate(540deg);
+  }
+}
+
+.pen-verdict {
+  position: absolute;
+  left: 50%;
+  top: 44%;
+  z-index: 5;
+  padding: 6px 18px;
+  border-radius: 8px;
+  background: var(--green);
+  color: var(--green-ink);
+  font-size: 22px;
+  font-weight: 900;
+  font-style: italic;
+  transform: translate(-50%, -50%);
+  animation: pop-in 0.22s cubic-bezier(0.2, 1.4, 0.4, 1);
+  pointer-events: none;
+}
+
+.pen-verdict.is-saved {
+  background: var(--red);
+  color: #fff;
+}
+
+.pen-spot {
+  width: 10px;
+  height: 6px;
+  margin-top: 80px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.pen-track {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 4px;
+}
+
+.pen-kick {
+  display: grid;
+  place-items: center;
+  height: 30px;
+  border-radius: 6px;
+  background: var(--s1);
+}
+
+.pen-kick small {
+  font-size: 8.5px;
+  font-weight: 900;
+  color: var(--faint);
+  font-variant-numeric: tabular-nums;
+}
+
+.pen-kick.is-next {
+  box-shadow: inset 0 0 0 2px var(--gold);
+}
+
+.pen-kick.is-goal {
+  background: var(--green);
+}
+
+.pen-kick.is-goal small {
+  color: var(--green-ink);
+}
+
+.pen-kick.is-saved {
+  background: var(--red);
+}
+
+.pen-kick.is-saved small {
+  color: #fff;
+}
+
+.pen-status {
+  min-height: 32px;
+  display: grid;
+  place-items: center;
+  padding: 0 10px;
+  border-radius: 8px;
+  background: var(--s1);
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--muted);
+  text-align: center;
+}
+
+/* Ball waiting on the spot between kicks. */
+.pen-ball.is-rest {
+  margin-top: 64px;
+  transform: none;
+  animation: none;
+}

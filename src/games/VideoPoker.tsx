@@ -1,8 +1,9 @@
 import {useEffect, useRef} from 'react';
-import {useFlash, usePersistent} from '../lib/hooks';
+import {useFlash, usePersistent, useSettler} from '../lib/hooks';
 import {focusDefault, focusEl} from '../lib/spatial';
 import {fmtMult, money, shuffle} from '../lib/util';
 import {useWallet, wallet} from '../lib/wallet';
+import {AutoRow, AutoSheet, useAutoBet} from '../ui/auto';
 import {BetAmount, PlayButton} from '../ui/controls';
 import {GameLayout, PlayingCard, RANKS, SUITS, WinPopup, type CardT, type WinInfo} from '../ui/game';
 import './games.css';
@@ -56,19 +57,43 @@ interface Round {
   result: HandId | null;
 }
 
+/** Simple hold strategy for Auto Bet. */
+function autoHold(hand: CardT[]): boolean[] {
+  const id = evaluate(hand);
+  if (['rf', 'sf', '4k', 'fh', 'fl', 'st'].includes(id)) return hand.map(() => true);
+  const counts = new Map<number, number>();
+  hand.forEach(c => counts.set(c.rank, (counts.get(c.rank) ?? 0) + 1));
+  if (id === '3k' || id === '2p' || id === 'jb') return hand.map(c => (counts.get(c.rank) ?? 0) >= 2);
+  const suits = new Map<number, number>();
+  hand.forEach(c => suits.set(c.suit, (suits.get(c.suit) ?? 0) + 1));
+  const flushSuit = [...suits.entries()].find(([, n]) => n === 4)?.[0];
+  if (flushSuit !== undefined) return hand.map(c => c.suit === flushSuit);
+  if ([...counts.values()].some(n => n === 2)) return hand.map(c => counts.get(c.rank) === 2);
+  let high = 0;
+  return hand.map(c => {
+    if ((c.rank === 1 || c.rank >= 11) && high < 2) {
+      high++;
+      return true;
+    }
+    return false;
+  });
+}
+
 const newDeck = () => shuffle(Array.from({length: 52}, (_, i) => ({rank: (i % 13) + 1, suit: Math.floor(i / 13)})));
 
 export default function VideoPoker() {
   const {betAmount} = useWallet();
-  const [round, setRound] = usePersistent<Round>('videopoker', {phase: 'idle', stake: 0, deck: [], hand: [], held: [], result: null});
+  const [round, setRound, latest] = usePersistent<Round>('videopoker', {phase: 'idle', stake: 0, deck: [], hand: [], held: [], result: null});
   const [win, flashWin] = useFlash<WinInfo>(2000);
+  const settle = useSettler();
   const cardsRef = useRef<HTMLDivElement>(null);
 
   const prevPhase = useRef(round.phase);
   useEffect(() => {
     if (prevPhase.current === round.phase) return;
     prevPhase.current = round.phase;
-    requestAnimationFrame(() => (round.phase === 'dealt' ? focusEl(cardsRef.current?.querySelector<HTMLElement>('button') ?? null) : focusDefault()));
+    requestAnimationFrame(() => (round.phase === 'dealt' && !auto.running ? focusEl(cardsRef.current?.querySelector<HTMLElement>('button') ?? null) : focusDefault()));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [round.phase]);
 
   const deal = () => {
@@ -79,17 +104,31 @@ export default function VideoPoker() {
     setRound({phase: 'dealt', stake, deck, hand, held: [false, false, false, false, false], result: null});
   };
 
-  const draw = () => {
-    if (round.phase !== 'dealt') return;
-    const deck = [...round.deck];
-    const hand = round.hand.map((c, i) => (round.held[i] ? c : deck.shift()!));
+  const draw = (r: Round = round) => {
+    if (r.phase !== 'dealt') return;
+    const deck = [...r.deck];
+    const hand = r.hand.map((c, i) => (r.held[i] ? c : deck.shift()!));
     const result = evaluate(hand);
     const pay = TABLE.find(t => t.id === result)?.pay ?? 0;
-    const payout = money(round.stake * pay);
-    wallet.settle('videopoker', round.stake, payout);
+    const payout = money(r.stake * pay);
+    wallet.settle('videopoker', r.stake, payout);
     if (pay > 1) flashWin({mult: pay, payout});
-    setRound({...round, phase: 'done', deck, hand, result});
+    setRound({...r, phase: 'done', deck, hand, result});
   };
+
+  const auto = useAutoBet({game: 'videopoker', idle: round.phase !== 'dealt', trigger: deal, delay: 600});
+  // Auto: show the holds it picked, then draw.
+  useEffect(() => {
+    if (!auto.running || round.phase !== 'dealt') return;
+    const t = setTimeout(() => {
+      const r = {...round, held: autoHold(round.hand)};
+      setRound(r);
+      // Skip if the wearer stopped Auto and drew (or changed holds) meanwhile.
+      settle(() => latest() === r && draw(r), 650);
+    }, 400);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [auto.running, round.phase]);
 
   const toggle = (i: number) => {
     if (round.phase !== 'dealt') return;
@@ -103,17 +142,20 @@ export default function VideoPoker() {
       title="Video Poker"
       sidebar={
         <>
-          <BetAmount locked={round.phase === 'dealt'} />
+          <BetAmount locked={round.phase === 'dealt' || auto.running} />
           <div className="vp-help">
             {round.phase === 'dealt' ? 'Select cards to HOLD, then Draw to replace the rest.' : 'Jacks or Better. Pair of Jacks or higher returns your bet.'}
           </div>
-          {round.phase === 'dealt' ? (
-            <PlayButton onClick={draw} tone="blue" autoFocus={false}>
+          {round.phase === 'dealt' && !auto.running ? (
+            <PlayButton onClick={() => draw()} tone="blue" autoFocus={false}>
               Draw
             </PlayButton>
           ) : (
-            <PlayButton onClick={deal}>{round.phase === 'done' ? 'Deal Again' : 'Deal'}</PlayButton>
+            <AutoRow auto={auto}>
+              <PlayButton onClick={deal}>{round.phase === 'done' ? 'Deal Again' : 'Deal'}</PlayButton>
+            </AutoRow>
           )}
+          <AutoSheet auto={auto} note="Holds paying hands, four to a flush, any pair, or high cards, then draws." />
         </>
       }
       stage={

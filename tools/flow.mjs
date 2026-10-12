@@ -31,15 +31,16 @@ check('Initial focus on Claim', (await focused()).includes('Claim'), await focus
 await key('ArrowDown');
 check('Down → nearest category tab', (await page.evaluate(() => document.activeElement?.getAttribute('role'))) === 'tab', await focused());
 await key('ArrowDown');
-check('Down → tile below', (await focused()) === 'Play Dice', await focused());
+check('Down → tile below', (await focused()) === 'Play Penalty Shootout', await focused());
 await key('ArrowLeft', 3);
-check('Left ×3 → Crash', (await focused()) === 'Play Crash', await focused());
+check('Left ×3 → Sky Run', (await focused()) === 'Play Sky Run', await focused());
 await key('ArrowRight', 3);
-check('Right ×3 → Dice', (await focused()) === 'Play Dice', await focused());
+check('Right ×3 → Penalty', (await focused()) === 'Play Penalty Shootout', await focused());
+await key('ArrowDown', 1, 200);
 await key('ArrowRight', 1, 400);
-check('Right off edge → page 2, first tile', (await focused()) === 'Play Wheel', await focused());
+check('Right off edge → page 2, first tile', (await focused()) === 'Play Limbo', await focused());
 await key('ArrowLeft', 1, 400);
-check('Left off edge → back to page 1 last tile', (await focused()) === 'Play Keno', await focused());
+check('Left off edge → back to page 1 last tile', (await focused()) === 'Play Dice', await focused());
 await key('ArrowDown', 1, 300);
 check('Down from bottom row → Next page button', (await focused()) === 'Next page', await focused());
 await key('Enter', 1, 400);
@@ -61,7 +62,7 @@ const recent = await page.evaluate(() => JSON.parse(localStorage.getItem('kmr.wa
 check('Mid-spin Back still settled the bet', recent === 1, `recent=${recent}, balance ${before} → ${await balance()}`);
 
 // Tabs: jump to Table Games, open Blackjack, deal + stand by D-pad only.
-await key('ArrowUp', 1, 200); // Wheel tile → tab above it
+await key('ArrowUp', 2, 200); // Wheel tile → Limbo → tab above it
 check('Up from tile → tab', (await page.evaluate(() => document.activeElement?.getAttribute('role'))) === 'tab', await focused());
 await key('ArrowLeft', 2, 150); // to the first tab
 await key('ArrowRight', 1, 150); // Table Games
@@ -96,7 +97,8 @@ await key('Escape', 1, 500);
 await key('ArrowUp', 1, 150); // Blackjack tile → tab above
 await key('ArrowLeft', 2, 150); // KMR Originals tab
 await key('Enter', 1, 300);
-await key('ArrowDown', 1, 200); // lands under the first tab: Crash
+await key('ArrowDown', 1, 200); // lands under the first tab: Sky Run
+await key('ArrowDown', 1, 150); // Crash
 await key('ArrowRight', 2, 150);
 check('Navigate to Mines tile', (await focused()) === 'Play Mines', await focused());
 await key('Enter', 1, 800);

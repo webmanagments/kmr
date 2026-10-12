@@ -2,6 +2,7 @@ import {useEffect, useRef, useState} from 'react';
 import {useFlash, useSettler} from '../lib/hooks';
 import {fmtMult, money, rand, reducedMotion, weightedIndex} from '../lib/util';
 import {useWallet, wallet} from '../lib/wallet';
+import {AutoRow, AutoSheet, useAutoBet} from '../ui/auto';
 import {BetAmount, Field, PlayButton} from '../ui/controls';
 import {GameLayout, WinPopup, type WinInfo} from '../ui/game';
 import './games.css';
@@ -78,7 +79,7 @@ export default function Horses() {
   useEffect(() => () => cancelAnimationFrame(raf.current), []);
 
   const run = () => {
-    if (busy) return;
+    if (busy || race !== null) return;
     const stake = betAmount;
     if (!wallet.debit(stake)) return;
     const order = finishOrder(field.p);
@@ -127,13 +128,15 @@ export default function Horses() {
   };
 
   const place = (i: number) => (race && done ? race.order.indexOf(i) + 1 : null);
+  const ready = !busy && race === null;
+  const auto = useAutoBet({game: 'horses', idle: ready, trigger: run});
 
   return (
     <GameLayout
       title="Horse Racing"
       sidebar={
         <>
-          <BetAmount locked={busy} />
+          <BetAmount locked={busy || auto.running} />
           <Field label="Pick a winner" aside="Odds">
             <div className="horse-list" role="radiogroup" aria-label="Horses">
               {HORSES.map((h, i) => (
@@ -155,9 +158,12 @@ export default function Horses() {
               ))}
             </div>
           </Field>
-          <PlayButton onClick={run} disabled={busy || (race !== null && !done) || (done && race !== null)} sub={`Win ${fmtMult(field.odds[pick])}`}>
-            {busy ? 'Racing…' : done ? 'Next race…' : 'Bet'}
-          </PlayButton>
+          <AutoRow auto={auto}>
+            <PlayButton onClick={run} disabled={!ready} sub={`Win ${fmtMult(field.odds[pick])}`}>
+              {busy ? 'Racing…' : done ? 'Next race…' : 'Bet'}
+            </PlayButton>
+          </AutoRow>
+          <AutoSheet auto={auto} note={`Backs ${HORSES[pick].name} (your current pick) in every race at that race's odds.`} />
         </>
       }
       stage={
