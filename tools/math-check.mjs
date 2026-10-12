@@ -212,5 +212,36 @@ out.push(['Roulette (any bet)', pct(36 / 37)]);
 out.push(['Horse Racing (every horse)', '97.00% (odds floored)']);
 out.push(['Blackjack / Video Poker', 'standard rules ≈ 99.4% / 99.5% with good play']);
 
+// Snakes: every roll's expected return, from every tile you can stand on.
+{
+  const BOARDS = {
+    easy: [1.02, 1.14, 0, 1.02, 1.7, 1.02, 1.02, 1.02, 0, 1.36, 1.36, 1.14],
+    medium: [1.23, 1.43, 1.02, 0, 1.02, 1.23, 1.23, 1.02, 1.74, 0, 0, 1.74],
+    hard: [1.23, 1.64, 0, 1.03, 0, 3.29, 0, 1.03, 0, 2.47, 0, 1.03],
+    expert: [1.09, 0, 0, 1.37, 3.28, 0, 1.64, 0, 0, 0, 4.38, 0],
+  };
+  for (const [name, b] of Object.entries(BOARDS)) {
+    let lo = 9;
+    let hi = 0;
+    b.forEach((v, p) => {
+      if (v === 0) return;
+      let ev = 0;
+      for (let s = 2; s <= 12; s++) ev += ((6 - Math.abs(s - 7)) / 36) * b[(p + s) % 12];
+      lo = Math.min(lo, ev);
+      hi = Math.max(hi, ev);
+    });
+    out.push([`Snakes ${name} (per roll, every tile)`, `${pct(lo)} – ${pct(hi)}`]);
+  }
+}
+
+// Scratch Cards: exact.
+{
+  const P = [[250, 0.0004], [50, 0.004], [10, 0.017], [5, 0.05], [2, 0.08], [1, 0.09]];
+  out.push(['Scratch Cards', `${pct(P.reduce((s, [m, p]) => s + m * p, 0))} (wins ${pct(P.reduce((s, [, p]) => s + p, 0))} of cards)`]);
+}
+
+// Drill: same depth distribution as Limbo, win pays the target.
+out.push(['Drill (any target)', 'same as Limbo: 99.00%']);
+
 const w = Math.max(...out.map(o => o[0].length));
 for (const [k, v] of out) console.log(`${k.padEnd(w)}  ${v}`);

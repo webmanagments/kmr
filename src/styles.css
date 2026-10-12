@@ -216,6 +216,36 @@ button:focus {
   overflow: hidden;
 }
 
+/* Top-bar buttons added for profiles. */
+.icon-btn {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: var(--r);
+  background: var(--s2);
+  color: var(--muted);
+}
+
+.icon-btn:focus {
+  color: #fff;
+}
+
+.icon-btn.is-gold {
+  color: var(--gold);
+}
+
+.fav-btn {
+  width: 30px;
+  height: 30px;
+  margin-left: 2px;
+  background: transparent;
+}
+
+.fav-btn.is-on {
+  color: var(--gold);
+}
+
 /* ---------- Lobby ---------- */
 
 .lobby {
@@ -1394,4 +1424,58 @@ button:focus {
   .lobby {
     scroll-behavior: auto;
   }
+}
+
+/* ---------- Profiles, favorites, sound ---------- */
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tab.is-mine svg {
+  color: var(--gold);
+}
+
+.tag-fav {
+  background: var(--gold);
+  color: #3b2500;
+}
+
+.tag-recent {
+  background: rgba(0, 0, 0, 0.45);
+  color: #fff;
+}
+
+.modal-who {
+  margin-left: 4px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: var(--s2);
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--muted);
+}
+
+.modal-sound {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: var(--r);
+  background: var(--s2);
+  font-weight: 800;
+  font-size: 12.5px;
+  color: var(--green);
+}
+
+.modal-sound.is-off {
+  color: var(--muted);
+}
+
+.modal-sound + .modal-close {
+  margin-left: 0;
 }

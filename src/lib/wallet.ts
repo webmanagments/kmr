@@ -1,6 +1,7 @@
 // Play-money wallet. A tiny external store so games can settle bets even after
 // their screen unmounts (for example when the wearer presses Back mid-animation).
 import {useSyncExternalStore} from 'react';
+import {sfx} from './sfx';
 import {loadJSON, money, saveJSON} from './util';
 
 export const START_BALANCE = 10_000;
@@ -97,6 +98,7 @@ export const wallet = {
       return false;
     }
     set({...state, balance: money(state.balance - amount)});
+    sfx('bet');
     return true;
   },
 
@@ -126,6 +128,8 @@ export const wallet = {
       bestWin: Math.max(state.bestWin, payout - bet),
       recent: [rec, ...state.recent].slice(0, 25),
     });
+    if (won) sfx(mult >= 10 ? 'bigwin' : 'win');
+    else if (payout === 0) sfx('lose');
   },
 
   setBet(amount: number) {
@@ -142,9 +146,12 @@ export const wallet = {
     return true;
   },
 
+  /** Refill to the starting balance. Lifetime stats (profit, bets…) are kept. */
   reset() {
-    set({...initial, betAmount: state.betAmount, lastBonus: state.lastBonus});
+    set({...state, balance: START_BALANCE});
   },
+
+  subscribe,
 };
 
 export function useWallet(): WalletState {

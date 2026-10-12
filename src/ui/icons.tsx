@@ -128,3 +128,58 @@ export function Undo({size = 16, ...p}: P) {
     </svg>
   );
 }
+
+export function Star({size = 16, filled = false, ...p}: P & {filled?: boolean}) {
+  return (
+    <svg {...base(size, p)}>
+      <path
+        d="M12 2.8l2.8 5.8 6.3.9-4.6 4.4 1.1 6.3L12 17.2l-5.6 3 1.1-6.3-4.6-4.4 6.3-.9z"
+        fill={filled ? 'currentColor' : 'none'}
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+export function Speaker({size = 16, off = false, ...p}: P & {off?: boolean}) {
+  return (
+    <svg {...base(size, p)}>
+      <path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" fill="currentColor" />
+      {off ? (
+        <path d="M16 9.5l5 5M21 9.5l-5 5" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+      ) : (
+        <path d="M15.5 9a4.5 4.5 0 0 1 0 6M18 6.5a8 8 0 0 1 0 11" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+      )}
+    </svg>
+  );
+}
+
+export function Backspace({size = 18, ...p}: P) {
+  return (
+    <svg {...base(size, p)}>
+      <path d="M8.5 5H20a1.5 1.5 0 0 1 1.5 1.5v11A1.5 1.5 0 0 1 20 19H8.5L2.5 12z" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
+      <path d="M11 9l6 6M17 9l-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+export function ShiftIcon({size = 18, filled = false, ...p}: P & {filled?: boolean}) {
+  return (
+    <svg {...base(size, p)}>
+      <path d="M12 3.5l8 8.5h-4.5v8h-7v-8H4z" fill={filled ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+export function DiceIcon({size = 16, ...p}: P) {
+  return (
+    <svg {...base(size, p)}>
+      <rect x="3.5" y="3.5" width="17" height="17" rx="4" fill="none" stroke="currentColor" strokeWidth="2" />
+      <circle cx="8.5" cy="8.5" r="1.6" fill="currentColor" />
+      <circle cx="15.5" cy="15.5" r="1.6" fill="currentColor" />
+      <circle cx="12" cy="12" r="1.6" fill="currentColor" />
+    </svg>
+  );
+}

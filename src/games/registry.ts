@@ -13,10 +13,12 @@ export interface GameDef {
 }
 
 export const GAMES: GameDef[] = [
-  {id: 'skyrun', name: 'Sky Run', cat: 'originals', from: '#38bdf8', to: '#1e3a8a', tag: 'NEW', load: () => import('./SkyRun')},
-  {id: 'chicken', name: 'Chicken', cat: 'originals', from: '#facc15', to: '#c2410c', tag: 'NEW', load: () => import('./Chicken')},
-  {id: 'tarot', name: 'Tarot', cat: 'originals', from: '#a855f7', to: '#3b0764', tag: 'NEW', load: () => import('./Tarot')},
-  {id: 'penalty', name: 'Penalty Shootout', cat: 'originals', from: '#4ade80', to: '#14532d', tag: 'NEW', load: () => import('./Penalty')},
+  {id: 'skyrun', name: 'Sky Run', cat: 'originals', from: '#38bdf8', to: '#1e3a8a', tag: 'HOT', load: () => import('./SkyRun')},
+  {id: 'snakes', name: 'Snakes', cat: 'originals', from: '#22c55e', to: '#14532d', tag: 'NEW', load: () => import('./Snakes')},
+  {id: 'drill', name: 'Drill', cat: 'originals', from: '#f59e0b', to: '#7c2d12', tag: 'NEW', load: () => import('./Drill')},
+  {id: 'chicken', name: 'Chicken', cat: 'originals', from: '#facc15', to: '#c2410c', load: () => import('./Chicken')},
+  {id: 'tarot', name: 'Tarot', cat: 'originals', from: '#a855f7', to: '#3b0764', load: () => import('./Tarot')},
+  {id: 'penalty', name: 'Penalty Shootout', cat: 'originals', from: '#4ade80', to: '#14532d', load: () => import('./Penalty')},
   {id: 'crash', name: 'Crash', cat: 'originals', from: '#ff7a18', to: '#d4145a', tag: 'HOT', load: () => import('./Crash')},
   {id: 'plinko', name: 'Plinko', cat: 'originals', from: '#ff4fd8', to: '#7b2ff7', tag: 'HOT', load: () => import('./Plinko')},
   {id: 'mines', name: 'Mines', cat: 'originals', from: '#1fa2ff', to: '#1a4fc4', tag: 'HOT', load: () => import('./Mines')},
@@ -36,14 +38,15 @@ export const GAMES: GameDef[] = [
   {id: 'baccarat', name: 'Baccarat', cat: 'table', from: '#14b8a6', to: '#134e4a', load: () => import('./Baccarat')},
   {id: 'videopoker', name: 'Video Poker', cat: 'table', from: '#6366f1', to: '#312e81', load: () => import('./VideoPoker')},
   {id: 'dragontiger', name: 'Dragon Tiger', cat: 'table', from: '#f97316', to: '#1d4ed8', tag: 'NEW', load: () => import('./DragonTiger')},
+  {id: 'scratch', name: 'Scratch Cards', cat: 'more', from: '#c084fc', to: '#4c1d95', tag: 'NEW', load: () => import('./Scratch')},
   {id: 'slots', name: 'Lucky 7s', cat: 'more', from: '#f43f5e', to: '#7e22ce', load: () => import('./Slots')},
   {id: 'horses', name: 'Horse Racing', cat: 'more', from: '#84cc16', to: '#365314', load: () => import('./Horses')},
 ];
 
 export const CATEGORIES: {id: Category; name: string}[] = [
-  {id: 'originals', name: 'KMR Originals'},
+  {id: 'originals', name: 'Originals'},
   {id: 'table', name: 'Table Games'},
-  {id: 'more', name: 'Slots & Racing'},
+  {id: 'more', name: 'Slots & More'},
 ];
 
 const lazyCache = new Map<string, LazyExoticComponent<ComponentType>>();

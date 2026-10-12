@@ -2,14 +2,14 @@
 import {chromium} from 'playwright';
 const base = process.argv[2] ?? 'http://127.0.0.1:4173';
 const ROUNDS = Number(process.argv[3] ?? 60);
-const IDS = ['skyrun', 'chicken', 'tarot', 'penalty', 'crash', 'plinko', 'mines', 'dice', 'limbo', 'towers', 'hilo', 'keno', 'wheel', 'pump', 'diamonds', 'coinflip', 'cases', 'slide', 'blackjack', 'roulette', 'baccarat', 'videopoker', 'dragontiger', 'slots', 'horses'];
+const IDS = ['skyrun', 'snakes', 'drill', 'chicken', 'tarot', 'penalty', 'crash', 'plinko', 'mines', 'dice', 'limbo', 'towers', 'hilo', 'keno', 'wheel', 'pump', 'diamonds', 'coinflip', 'cases', 'slide', 'blackjack', 'roulette', 'baccarat', 'videopoker', 'dragontiger', 'scratch', 'slots', 'horses'];
 const browser = await chromium.launch({headless: true, executablePath: '/opt/google/chrome/chrome'});
 const page = await browser.newPage({viewport: {width: 600, height: 600}});
 const errors = [];
 page.on('pageerror', e => errors.push(e.message));
 page.on('console', m => m.type() === 'error' && errors.push(m.text()));
 await page.goto(base, {waitUntil: 'load'});
-await page.evaluate(() => localStorage.clear());
+await page.evaluate(() => { localStorage.clear(); localStorage.setItem('kmr.dbOverride', 'http://127.0.0.1:9199'); localStorage.setItem('kmr.profile.v1', JSON.stringify({name: 'Tester', claimed: false, secret: 'x'.repeat(48), sound: false})); });
 await page.reload({waitUntil: 'load'});
 await page.waitForTimeout(300);
 
@@ -65,7 +65,7 @@ const audit = await page.evaluate(() => {
   const w = JSON.parse(localStorage.getItem('kmr.wallet.v2'));
   // Stakes still riding in resumable rounds (debited, not yet settled).
   let open = 0;
-  for (const g of ['mines', 'towers', 'hilo', 'pump', 'coinflip', 'videopoker', 'chicken', 'penalty']) {
+  for (const g of ['mines', 'towers', 'hilo', 'pump', 'coinflip', 'videopoker', 'chicken', 'penalty', 'snakes', 'scratch']) {
     const r = JSON.parse(localStorage.getItem(`kmr.round.${g}`) || 'null');
     if (r && (r.phase === 'playing' || r.phase === 'dealt')) open += r.stake;
   }

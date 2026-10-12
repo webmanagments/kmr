@@ -6,56 +6,236 @@
   height: 100%;
 }
 
+/* ---------- Stadium ---------- */
+
 .pen-pitch {
   position: relative;
   flex: 1;
   min-height: 0;
-  display: grid;
-  justify-items: center;
-  align-content: start;
-  padding-top: 18px;
-  border-radius: 10px;
-  background: linear-gradient(180deg, #0b1822 0%, #0f2a1a 45%, #13361f 100%);
+  border-radius: 12px;
   overflow: hidden;
+  background: #1c6f31;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
 }
 
+/* Mowing stripes receding toward the goal */
+.pen-pitch::before {
+  content: '';
+  position: absolute;
+  left: -45%;
+  right: -45%;
+  top: 80px;
+  bottom: -60px;
+  background: repeating-linear-gradient(90deg, #1d7633 0 34px, #238a3c 34px 68px);
+  transform: perspective(260px) rotateX(46deg);
+  transform-origin: top center;
+}
+
+/* Floodlit vignette */
 .pen-pitch::after {
   content: '';
   position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 44%;
-  background: repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.04) 0 34px, transparent 34px 68px);
+  inset: 0;
+  background: radial-gradient(120% 70% at 50% 62%, transparent 45%, rgba(0, 10, 5, 0.55) 100%);
   pointer-events: none;
+  z-index: 1;
 }
 
-.pen-goal {
-  position: relative;
-  width: 330px;
-  height: 196px;
-  border: 6px solid #fff;
-  border-bottom: 0;
-  border-radius: 4px 4px 0 0;
+.pen-crowd {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 62px;
+  background:
+    radial-gradient(circle, rgba(255, 77, 109, 0.75) 1.7px, transparent 2.2px) 0 0 / 11px 9px,
+    radial-gradient(circle, rgba(255, 197, 49, 0.7) 1.7px, transparent 2.2px) 5px 4px / 13px 10px,
+    radial-gradient(circle, rgba(143, 211, 255, 0.7) 1.6px, transparent 2.1px) 3px 2px / 9px 11px,
+    radial-gradient(circle, rgba(255, 255, 255, 0.45) 1.4px, transparent 1.9px) 7px 6px / 15px 8px,
+    linear-gradient(180deg, #08111a, #142230);
+}
+
+.pen-crowd i {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 8px 3px rgba(255, 255, 255, 0.8);
+  opacity: 0;
+  animation: pen-flash 3s infinite;
+}
+
+@keyframes pen-flash {
+  0%,
+  6%,
+  100% {
+    opacity: 0;
+  }
+  2% {
+    opacity: 1;
+  }
+}
+
+.pen-pitch.is-cheer .pen-crowd {
+  animation: pen-cheer 0.22s ease-in-out 6 alternate;
+  filter: brightness(1.4);
+}
+
+.pen-pitch.is-cheer .pen-crowd i {
+  animation-duration: 0.5s;
+}
+
+@keyframes pen-cheer {
+  to {
+    background-position-y: -3px, 1px, -2px, 3px, 0;
+  }
+}
+
+.pen-lights {
+  position: absolute;
+  inset: 0;
   z-index: 1;
+  pointer-events: none;
+  background:
+    radial-gradient(60px 40px at 6% 2%, rgba(255, 255, 240, 0.9), transparent 70%),
+    radial-gradient(60px 40px at 94% 2%, rgba(255, 255, 240, 0.9), transparent 70%),
+    conic-gradient(from 150deg at 6% 0%, transparent 0deg, rgba(255, 255, 230, 0.08) 12deg, transparent 30deg),
+    conic-gradient(from 180deg at 94% 0%, transparent 0deg, rgba(255, 255, 230, 0.08) 18deg, transparent 36deg);
+}
+
+.pen-boards {
+  position: absolute;
+  top: 62px;
+  left: 0;
+  right: 0;
+  height: 18px;
+  overflow: hidden;
+  background: #050d13;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), inset 0 -2px 0 rgba(0, 0, 0, 0.6);
+}
+
+.pen-boards span {
+  display: block;
+  width: max-content;
+  padding-top: 2px;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  color: var(--green);
+  text-shadow: 0 0 6px rgba(0, 231, 1, 0.7);
+  white-space: nowrap;
+  animation: pen-led 22s linear infinite;
+}
+
+@keyframes pen-led {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.pen-lines {
+  position: absolute;
+  left: -14px;
+  right: -14px;
+  top: 264px;
+  width: calc(100% + 28px);
+  height: 190px;
+}
+
+/* ---------- Goal ---------- */
+
+.pen-goal {
+  position: absolute;
+  top: 96px;
+  left: 50%;
+  z-index: 2;
+  width: 330px;
+  height: 176px;
+  margin-left: -165px;
 }
 
 .pen-net {
   position: absolute;
-  inset: 0;
+  inset: 0 6px;
   background:
-    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.13) 0 1px, transparent 1px 12px),
-    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.13) 0 1px, transparent 1px 12px);
+    repeating-linear-gradient(60deg, rgba(255, 255, 255, 0.16) 0 1.2px, transparent 1.2px 11px),
+    repeating-linear-gradient(-60deg, rgba(255, 255, 255, 0.16) 0 1.2px, transparent 1.2px 11px),
+    linear-gradient(180deg, rgba(5, 15, 10, 0.75), rgba(5, 20, 10, 0.55));
+  box-shadow: inset 0 10px 18px rgba(0, 0, 0, 0.5);
+  transform-origin: 50% 30%;
 }
 
+.pen-goal.is-ripple .pen-net {
+  animation: pen-ripple 0.6s ease-out;
+}
+
+@keyframes pen-ripple {
+  30% {
+    transform: scale(1.04, 1.06);
+    filter: brightness(1.5);
+  }
+}
+
+.pen-post,
+.pen-bar {
+  position: absolute;
+  background: linear-gradient(90deg, #cfd8e0, #ffffff 40%, #b9c4cf);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+  z-index: 4;
+}
+
+.pen-post {
+  top: 0;
+  bottom: 0;
+  width: 7px;
+}
+
+.pen-post.is-left {
+  left: 0;
+}
+
+.pen-post.is-right {
+  right: 0;
+}
+
+.pen-bar {
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 7px;
+  background: linear-gradient(180deg, #ffffff, #c5cfd8);
+}
+
+.pen-reach,
 .pen-zones {
   position: absolute;
-  inset: 4px;
+  inset: 9px 9px 3px;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: repeat(2, 1fr);
   gap: 6px;
-  z-index: 3;
+}
+
+.pen-reach {
+  z-index: 1;
+  pointer-events: none;
+}
+
+.pen-reach i {
+  border-radius: 8px;
+  opacity: 0;
+  transition: opacity 0.25s;
+}
+
+.pen-reach i.is-on {
+  opacity: 1;
+  background: rgba(255, 60, 90, 0.22);
+  box-shadow: inset 0 0 0 2px rgba(255, 77, 109, 0.75);
+}
+
+.pen-zones {
+  z-index: 5;
 }
 
 .pen-zone {
@@ -66,106 +246,424 @@
 }
 
 .pen-target {
-  width: 34px;
-  height: 34px;
+  position: relative;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
-  border: 3px solid rgba(255, 255, 255, 0.55);
-  box-shadow: inset 0 0 0 6px rgba(255, 255, 255, 0.08);
-  transition: transform 0.12s, border-color 0.12s;
+  border: 3px solid rgba(255, 255, 255, 0.6);
+  transition: transform 0.15s, border-color 0.15s, opacity 0.2s;
+}
+
+.pen-target i,
+.pen-target::before,
+.pen-target::after {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.75);
+}
+
+.pen-target::before,
+.pen-target::after {
+  content: '';
+}
+
+.pen-target::before {
+  left: 50%;
+  top: -9px;
+  bottom: -9px;
+  width: 2px;
+  margin-left: -1px;
+}
+
+.pen-target::after {
+  top: 50%;
+  left: -9px;
+  right: -9px;
+  height: 2px;
+  margin-top: -1px;
+}
+
+.pen-target i {
+  left: 50%;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  margin: -3px 0 0 -3px;
+  border-radius: 50%;
 }
 
 .pen-zone:not(:disabled):focus {
-  background: rgba(255, 255, 255, 0.12);
-  outline-offset: -3px;
+  background: rgba(255, 197, 49, 0.14);
+  outline: 2px solid #fff;
+  outline-offset: -2px;
 }
 
 .pen-zone:not(:disabled):focus .pen-target {
   border-color: var(--gold);
-  transform: scale(1.2);
+  transform: scale(1.25);
+}
+
+.pen-zone:not(:disabled):focus .pen-target::before,
+.pen-zone:not(:disabled):focus .pen-target::after,
+.pen-zone:not(:disabled):focus .pen-target i {
+  background: var(--gold);
 }
 
 .pen-zone:disabled .pen-target {
-  opacity: 0.35;
+  opacity: 0.22;
 }
 
 .pen-zone.is-goal {
-  background: rgba(0, 231, 1, 0.16);
+  background: rgba(0, 231, 1, 0.2);
+  box-shadow: inset 0 0 0 2px rgba(0, 231, 1, 0.8);
 }
 
-.pen-zone.is-saved {
-  background: rgba(255, 77, 109, 0.18);
-}
+/* ---------- Keeper ---------- */
 
 .pen-keeper {
   position: absolute;
   left: 50%;
-  bottom: 0;
-  z-index: 2;
-  margin-left: -40px;
-  transition: transform 0.45s cubic-bezier(0.2, 0.8, 0.3, 1);
+  bottom: -2px;
+  z-index: 3;
+  width: 120px;
+  height: 140px;
+  margin-left: -60px;
+  transition: transform 0.38s cubic-bezier(0.2, 0.9, 0.3, 1);
 }
 
-/* Keeper poses. Zones: 0 1 2 top, 3 4 5 bottom. */
-.pen-keeper.pose-z0 { transform: translate(-108px, -86px) rotate(-30deg); }
-.pen-keeper.pose-z1 { transform: translate(0, -86px); }
-.pen-keeper.pose-z2 { transform: translate(108px, -86px) rotate(30deg); }
-.pen-keeper.pose-z3 { transform: translate(-112px, 0) rotate(-62deg); }
-.pen-keeper.pose-z4 { transform: translate(0, -4px) scale(1.05); }
-.pen-keeper.pose-z5 { transform: translate(112px, 0) rotate(62deg); }
-.pen-keeper.pose-col0 { transform: translate(-108px, -40px) rotate(-14deg) scaleY(1.25); }
-.pen-keeper.pose-col1 { transform: translate(0, -40px) scaleY(1.25); }
-.pen-keeper.pose-col2 { transform: translate(108px, -40px) rotate(14deg) scaleY(1.25); }
-.pen-keeper.pose-row0 { transform: translate(0, -92px) scaleX(3.4) scaleY(0.9); }
-.pen-keeper.pose-row1 { transform: translate(0, 8px) scaleX(3.4) scaleY(0.75); }
+.pen-keeper.is-diving {
+  transition-delay: 0.42s;
+}
+
+.kp-svg {
+  display: block;
+  overflow: visible;
+}
+
+.kp-svg g {
+  transition: opacity 0.15s;
+}
+
+.kp-arms-up,
+.kp-arms-wide {
+  opacity: 0;
+}
+
+.pen-keeper.pose-idle .kp-svg {
+  animation: kp-sway 1.8s ease-in-out infinite;
+}
+
+@keyframes kp-sway {
+  25% {
+    transform: translateX(-7px);
+  }
+  75% {
+    transform: translateX(7px);
+  }
+}
+
+/* Dives reach up; the low-centre save and the Legend's row-wide reach use other arms. */
+.pen-keeper[class*='pose-z'] .kp-arms-up,
+.pen-keeper[class*='pose-col'] .kp-arms-up {
+  opacity: 1;
+}
+
+.pen-keeper[class*='pose-z'] .kp-arms-out,
+.pen-keeper[class*='pose-col'] .kp-arms-out,
+.pen-keeper[class*='pose-row'] .kp-arms-out {
+  opacity: 0;
+}
+
+.pen-keeper.pose-z4 .kp-arms-up {
+  opacity: 0;
+}
+
+.pen-keeper.pose-z4 .kp-arms-out {
+  opacity: 1;
+}
+
+.pen-keeper[class*='pose-row'] .kp-arms-wide {
+  opacity: 1;
+}
+
+.pen-keeper.pose-z0 { transform: translate(-98px, -60px) rotate(-64deg); }
+.pen-keeper.pose-z1 { transform: translate(0, -56px); }
+.pen-keeper.pose-z2 { transform: translate(98px, -60px) rotate(64deg); }
+.pen-keeper.pose-z3 { transform: translate(-104px, 14px) rotate(-90deg); }
+.pen-keeper.pose-z4 { transform: translate(0, 8px) scale(1.06); }
+.pen-keeper.pose-z5 { transform: translate(104px, 14px) rotate(90deg); }
+.pen-keeper.pose-col0 { transform: translate(-106px, -22px) rotate(-12deg) scale(1.24); }
+.pen-keeper.pose-col1 { transform: translate(0, -22px) scale(1.24); }
+.pen-keeper.pose-col2 { transform: translate(106px, -22px) rotate(12deg) scale(1.24); }
+.pen-keeper.pose-row0 { transform: translate(0, -64px); }
+.pen-keeper.pose-row1 { transform: translate(0, 18px) scale(1, 0.94); }
+
+/* ---------- Ball, shadow, striker ---------- */
+
+.pen-spot {
+  position: absolute;
+  left: 50%;
+  top: 398px;
+  z-index: 2;
+  width: 12px;
+  height: 5px;
+  margin-left: -6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.75);
+}
 
 .pen-ball {
   position: absolute;
   left: 50%;
-  top: 100%;
-  z-index: 4;
-  margin: 40px 0 0 -17px;
-  transform: var(--to);
-  animation: ball-shot 0.55s cubic-bezier(0.25, 0.7, 0.35, 1) both;
+  top: 373px;
+  z-index: 6;
+  width: 30px;
+  height: 30px;
+  margin-left: -15px;
 }
 
-@keyframes ball-shot {
-  from {
-    transform: translate(0, 0) scale(1) rotate(0deg);
-  }
+.pen-ball svg {
+  display: block;
+}
+
+.pen-ball.is-rest {
+  z-index: 3;
+  filter: drop-shadow(0 4px 2px rgba(0, 0, 0, 0.4));
+}
+
+.pen-ball.is-flying.is-goal {
+  animation: pen-goal-flight 0.9s 0.24s cubic-bezier(0.2, 0.6, 0.3, 1) both;
+}
+
+.pen-ball.is-flying.is-saved {
+  animation: pen-saved-flight 1.1s 0.24s cubic-bezier(0.2, 0.6, 0.3, 1) both;
+}
+
+.pen-ball.is-done.is-goal {
+  z-index: 2;
+}
+
+.pen-ball-spin {
+  display: block;
+  animation: pen-spin 0.5s linear 0.24s 2;
+}
+
+@keyframes pen-spin {
   to {
-    transform: var(--to) rotate(540deg);
+    transform: rotate(360deg);
   }
 }
+
+@keyframes pen-goal-flight {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  42% {
+    transform: translate(var(--mx), var(--my)) scale(0.78);
+  }
+  62% {
+    transform: translate(var(--tx), var(--ty)) scale(0.6);
+  }
+  78% {
+    transform: translate(calc(var(--tx) * 1.02), calc(var(--ty) - 6px)) scale(0.52);
+  }
+  100% {
+    transform: translate(calc(var(--tx) * 1.02), calc(var(--ty) + 4px)) scale(0.52);
+  }
+}
+
+@keyframes pen-saved-flight {
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 1;
+  }
+  38% {
+    transform: translate(var(--mx), var(--my)) scale(0.78);
+  }
+  56% {
+    transform: translate(var(--tx), var(--ty)) scale(0.62);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(calc(var(--tx) + var(--dx)), calc(var(--ty) + 120px)) scale(0.7);
+    opacity: 0;
+  }
+}
+
+.pen-shadow {
+  position: absolute;
+  left: 50%;
+  top: 396px;
+  z-index: 2;
+  width: 26px;
+  height: 7px;
+  margin-left: -13px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.4);
+  opacity: 0;
+}
+
+.pen-shadow[data-flying='true'] {
+  animation: pen-shadow 0.6s 0.24s ease-out both;
+}
+
+@keyframes pen-shadow {
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(calc(var(--tx) * 0.9), -118px) scale(0.5);
+    opacity: 0.15;
+  }
+}
+
+.pen-striker {
+  position: absolute;
+  left: 50%;
+  top: 364px;
+  z-index: 5;
+  margin-left: -76px;
+}
+
+.pen-striker svg {
+  display: block;
+  overflow: visible;
+}
+
+.pen-striker * {
+  transform-box: fill-box;
+}
+
+.pen-striker.is-kicking {
+  animation: st-run 0.3s ease-in both;
+}
+
+@keyframes st-run {
+  from {
+    transform: translate(-26px, 22px) scale(1.08);
+  }
+}
+
+.pen-striker.is-kicking .st-leg-kick {
+  transform-origin: top center;
+  animation: st-kick 0.36s 0.18s ease-out both;
+}
+
+@keyframes st-kick {
+  0% {
+    transform: rotate(0);
+  }
+  40% {
+    transform: rotate(-38deg);
+  }
+  100% {
+    transform: rotate(-8deg);
+  }
+}
+
+/* ---------- Result ---------- */
 
 .pen-verdict {
   position: absolute;
   left: 50%;
-  top: 44%;
-  z-index: 5;
-  padding: 6px 18px;
-  border-radius: 8px;
+  top: 318px;
+  z-index: 7;
+  padding: 4px 18px 6px;
+  border-radius: 10px;
   background: var(--green);
   color: var(--green-ink);
-  font-size: 22px;
+  font-size: 30px;
   font-weight: 900;
   font-style: italic;
-  transform: translate(-50%, -50%);
-  animation: pop-in 0.22s cubic-bezier(0.2, 1.4, 0.4, 1);
+  letter-spacing: -0.02em;
+  transform: translate(-50%, -50%) rotate(-4deg);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45), 0 0 26px rgba(0, 231, 1, 0.45);
+  animation: pen-stamp 0.32s cubic-bezier(0.2, 1.5, 0.4, 1);
   pointer-events: none;
 }
 
 .pen-verdict.is-saved {
   background: var(--red);
   color: #fff;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45), 0 0 26px rgba(255, 77, 109, 0.45);
 }
 
-.pen-spot {
-  width: 10px;
-  height: 6px;
-  margin-top: 80px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.7);
+@keyframes pen-stamp {
+  from {
+    transform: translate(-50%, -50%) rotate(-4deg) scale(2.2);
+    opacity: 0;
+  }
 }
+
+.pen-confetti {
+  position: absolute;
+  inset: 0;
+  z-index: 7;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.pen-confetti i {
+  position: absolute;
+  top: -12px;
+  width: 7px;
+  height: 11px;
+  border-radius: 2px;
+  animation: pen-fall 1.4s cubic-bezier(0.3, 0.4, 0.6, 1) both;
+}
+
+.pen-confetti i:nth-child(odd) {
+  animation-duration: 1.7s;
+}
+
+@keyframes pen-fall {
+  to {
+    transform: translate(18px, 330px) rotate(540deg);
+    opacity: 0;
+  }
+}
+
+.pen-hud {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  right: 8px;
+  z-index: 8;
+  display: flex;
+  justify-content: space-between;
+  pointer-events: none;
+}
+
+.pen-hud span {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(5, 13, 19, 0.8);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14);
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.pen-hud b {
+  color: #fff;
+}
+
+.pen-hud span:last-child {
+  font-size: 13.5px;
+  font-weight: 900;
+  color: #fff;
+}
+
+.pen-hud span.tone-green {
+  color: var(--green);
+}
+
+.pen-hud span.tone-red {
+  color: var(--red);
+}
+
+/* ---------- Kick track & status ---------- */
 
 .pen-track {
   display: grid;
@@ -176,9 +674,15 @@
 .pen-kick {
   display: grid;
   place-items: center;
+  align-content: center;
   height: 30px;
   border-radius: 6px;
   background: var(--s1);
+}
+
+.pen-kick b {
+  font-size: 12px;
+  line-height: 1;
 }
 
 .pen-kick small {
@@ -194,6 +698,7 @@
 
 .pen-kick.is-goal {
   background: var(--green);
+  color: var(--green-ink);
 }
 
 .pen-kick.is-goal small {
@@ -216,14 +721,7 @@
   border-radius: 8px;
   background: var(--s1);
   font-size: 12.5px;
-  font-weight: 700;
+  font-weight: 800;
   color: var(--muted);
   text-align: center;
-}
-
-/* Ball waiting on the spot between kicks. */
-.pen-ball.is-rest {
-  margin-top: 64px;
-  transform: none;
-  animation: none;
 }

@@ -14,7 +14,7 @@ await page.addInitScript(() => {
   window.addEventListener('keydown', e => { if (e.key.startsWith('Arrow')) e.stopImmediatePropagation(); }, true);
 });
 await page.goto(base, {waitUntil: 'load'});
-await page.evaluate(() => localStorage.clear());
+await page.evaluate(() => { localStorage.clear(); localStorage.setItem('kmr.dbOverride', 'http://127.0.0.1:9199'); localStorage.setItem('kmr.profile.v1', JSON.stringify({name: 'Tester', claimed: false, secret: 'x'.repeat(48), sound: false})); });
 await page.reload({waitUntil: 'load'});
 await page.waitForTimeout(500);
 const where = () =>

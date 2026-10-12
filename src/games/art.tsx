@@ -34,24 +34,85 @@ function Gem({x, y, s = 1, c1, c2, c3}: {x: number; y: number; s?: number; c1: s
 const ART: Record<string, ReactNode> = {
   skyrun: (
     <>
-      <path d="M4 84h92" stroke="#fff" strokeOpacity=".3" strokeWidth="2" />
-      <path d="M14 80h46l-5 8H20z" fill="#fff" opacity=".85" />
-      <rect x="44" y="72" width="8" height="8" fill="#fff" opacity=".85" />
-      <text x="70" y="30" fontSize="13" fontWeight="900" fill="#ffd34d" fontFamily="system-ui,Arial">
+      <circle cx="80" cy="18" r="9" fill="#fff6c8" opacity=".9" />
+      <path d="M0 84h100v16H0z" fill="#0b4a85" opacity=".55" />
+      <path d="M8 82h48l-5 7H13z" fill="#e9eef3" opacity=".9" />
+      <rect x="40" y="72" width="9" height="10" fill="#e9eef3" opacity=".9" />
+      <circle cx="76" cy="40" r="10" fill="#ffc531" stroke="#fff" strokeWidth="2" />
+      <text x="76" y="44" textAnchor="middle" fontSize="10" fontWeight="900" fill="#4a2b00" fontFamily="system-ui,Arial">
         ×5
       </text>
-      <text x="16" y="34" fontSize="12" fontWeight="900" fill="#7dff7f" fontFamily="system-ui,Arial">
+      <circle cx="20" cy="30" r="9" fill="#2fe35a" stroke="#fff" strokeWidth="2" />
+      <text x="20" y="34" textAnchor="middle" fontSize="9" fontWeight="900" fill="#03270d" fontFamily="system-ui,Arial">
         +2
       </text>
-      <g transform="translate(52 52) rotate(-14)">
-        <path d="M-30 -2l-9 0 9 4z" fill="#ffd34d" />
-        <path d="M-26 -4l-6-16h12l7 16z" fill="#fff" />
-        <ellipse rx="30" ry="10" fill="#00e701" />
-        <rect x="-24" y="-1" width="44" height="3" fill="#fff" />
-        <ellipse cx="9" cy="-6" rx="10" ry="7" fill="#bff1ff" />
-        <path d="M-6 3h18l-14 15h-13z" fill="#00a800" />
-        <ellipse cx="28" rx="6" ry="6" fill="#fff" />
+      <g transform="translate(48 56) rotate(-12)">
+        <path d="M-22 -3l-8-15h9l7 13z" fill="#d62845" />
+        <path d="M-2 -3h14l-9-10h-10z" fill="#9b1830" />
+        <path d="M26 -6c5 6 0 13 0 13h-36c-10 0-18-4-20-7 2-4 10-7 20-7z" fill="#e0283f" />
+        <path d="M24 1h-50l2 3h48z" fill="#fff" />
+        <ellipse cx="3" cy="-7" rx="8" ry="6" fill="#bff1ff" />
+        <path d="M-6 3h18l-10 13h-12z" fill="#c81f38" />
+        <ellipse cx="30" cy="0" rx="2.5" ry="12" fill="#fff" opacity=".6" />
       </g>
+    </>
+  ),
+  snakes: (
+    <>
+      {[0, 1, 2, 3].map(i => (
+        <g key={i}>
+          <rect x={8 + i * 22} y="10" width="18" height="18" rx="4" fill="#fff" opacity=".22" />
+          <rect x={8 + i * 22} y="72" width="18" height="18" rx="4" fill="#fff" opacity=".22" />
+        </g>
+      ))}
+      <rect x="8" y="32" width="18" height="18" rx="4" fill="#fff" opacity=".22" />
+      <rect x="74" y="50" width="18" height="18" rx="4" fill="#fff" opacity=".22" />
+      <path d="M22 62c-10-6-2-18 10-14s20 6 24-4-10-12-4-20 20-2 18 8" fill="none" stroke="#1fa64a" strokeWidth="9" strokeLinecap="round" />
+      <path d="M22 62c-10-6-2-18 10-14s20 6 24-4-10-12-4-20 20-2 18 8" fill="none" stroke="#6bf08e" strokeWidth="3" strokeLinecap="round" strokeDasharray="2 7" />
+      <ellipse cx="70" cy="40" rx="8" ry="6.5" fill="#1fa64a" />
+      <circle cx="72" cy="38" r="2" fill="#fff6c8" />
+      <g transform="translate(36 60) rotate(-12)">
+        <rect x="0" y="0" width="22" height="22" rx="5" fill="#fff" />
+        <circle cx="6" cy="6" r="2.4" fill="#0b1822" />
+        <circle cx="16" cy="16" r="2.4" fill="#0b1822" />
+        <circle cx="11" cy="11" r="2.4" fill="#0b1822" />
+      </g>
+    </>
+  ),
+  drill: (
+    <>
+      <path d="M0 40h100v60H0z" fill="#6b4a2b" opacity=".75" />
+      <path d="M0 64h100v36H0z" fill="#474f58" opacity=".8" />
+      <path d="M0 40h100" stroke="#3fae52" strokeWidth="4" />
+      <circle cx="20" cy="76" r="3" fill="#c48cff" />
+      <circle cx="80" cy="86" r="3" fill="#78dcff" />
+      <path d="M38 40L48 6h4l10 34" fill="none" stroke="#ffc531" strokeWidth="4" strokeLinejoin="round" />
+      <path d="M41 28h18M45 16h10" stroke="#ffc531" strokeWidth="3" />
+      <rect x="47" y="40" width="6" height="28" fill="#1a1410" />
+      <path d="M41 68h18L50 92z" fill="#e9eef3" />
+      <path d="M43 73l14 2M45 79l10 2M47 85l6 1" stroke="#6f8290" strokeWidth="2" />
+      <path d="M30 88l6-4M70 88l-6-4M36 94l4-6M64 94l-4-6" stroke="#ffd34d" strokeWidth="2.5" strokeLinecap="round" />
+    </>
+  ),
+  scratch: (
+    <>
+      <g transform="translate(50 52) rotate(-6)">
+        <rect x="-34" y="-40" width="68" height="80" rx="8" fill="#3b0764" stroke="#ffc531" strokeWidth="3" />
+        {[0, 1, 2].map(r =>
+          [0, 1, 2].map(c => (
+            <rect key={`${r}${c}`} x={-26 + c * 18} y={-30 + r * 20} width="16" height="18" rx="3" fill={r === 1 && c > 0 ? '#fffaf0' : '#c5cfd8'} />
+          )),
+        )}
+        <path d="M-8 -12l18 -6" stroke="#fff" strokeWidth="2" opacity=".6" />
+        <text x="1" y="5" textAnchor="middle" fontSize="11" fill="#e8173d" fontFamily="system-ui,Arial">
+          ♦
+        </text>
+        <text x="19" y="5" textAnchor="middle" fontSize="11" fill="#e8173d" fontFamily="system-ui,Arial">
+          ♦
+        </text>
+      </g>
+      <circle cx="80" cy="76" r="11" fill="#ffd34d" stroke="#c27c00" strokeWidth="2.5" />
+      <path d="M76 72v8M76 76l6-5M78 75l5 6" stroke="#9a5a00" strokeWidth="2" strokeLinecap="round" />
     </>
   ),
   chicken: (

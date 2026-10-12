@@ -9,7 +9,7 @@ async function fresh(vw = 600, vh = 600) {
   const errors = [];
   page.on('pageerror', e => errors.push(e.message));
   await page.goto(base, {waitUntil: 'load'});
-  await page.evaluate(() => localStorage.clear());
+  await page.evaluate(() => { localStorage.clear(); localStorage.setItem('kmr.dbOverride', 'http://127.0.0.1:9199'); localStorage.setItem('kmr.profile.v1', JSON.stringify({name: 'Tester', claimed: false, secret: 'x'.repeat(48), sound: false})); });
   await page.reload({waitUntil: 'load'});
   await page.waitForTimeout(700);
   return {page, errors};
@@ -71,7 +71,7 @@ const synth = (page, key, opts = {}) =>
   await page.keyboard.press('ArrowDown');
   await page.waitForTimeout(150);
   const after = await focused(page);
-  ok('Claimed-but-unhandled press still moves exactly one step', start.includes('Claim') && /Racing|Table|Originals/.test(after), `${start} → ${after}`);
+  ok('Claimed-but-unhandled press still moves exactly one step', start.includes('Claim') && /More|Racing|Table|Originals/.test(after), `${start} → ${after}`);
   await page.close();
 }
 
@@ -91,7 +91,7 @@ const synth = (page, key, opts = {}) =>
   });
   await page.keyboard.press('ArrowDown');
   await page.waitForTimeout(150);
-  ok('Host-handled press is not doubled', (await focused(page)).includes('KMR Originals'), await focused(page));
+  ok('Host-handled press is not doubled', (await focused(page)).includes('Originals'), await focused(page));
   await page.close();
 }
 

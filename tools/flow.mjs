@@ -23,7 +23,7 @@ const key = async (k, n = 1, wait = 120) => {
 const balance = () => page.evaluate(() => document.querySelector('.balance')?.textContent);
 
 await page.goto(base, {waitUntil: 'load'});
-await page.evaluate(() => localStorage.clear());
+await page.evaluate(() => { localStorage.clear(); localStorage.setItem('kmr.dbOverride', 'http://127.0.0.1:9199'); localStorage.setItem('kmr.profile.v1', JSON.stringify({name: 'Tester', claimed: false, secret: 'x'.repeat(48), sound: false})); });
 await page.reload({waitUntil: 'load'});
 await page.waitForTimeout(500);
 
@@ -31,22 +31,22 @@ check('Initial focus on Claim', (await focused()).includes('Claim'), await focus
 await key('ArrowDown');
 check('Down → nearest category tab', (await page.evaluate(() => document.activeElement?.getAttribute('role'))) === 'tab', await focused());
 await key('ArrowDown');
-check('Down → tile below', (await focused()) === 'Play Penalty Shootout', await focused());
+check('Down → tile below', (await focused()) === 'Play Chicken', await focused());
 await key('ArrowLeft', 3);
 check('Left ×3 → Sky Run', (await focused()) === 'Play Sky Run', await focused());
 await key('ArrowRight', 3);
-check('Right ×3 → Penalty', (await focused()) === 'Play Penalty Shootout', await focused());
+check('Right ×3 → Chicken', (await focused()) === 'Play Chicken', await focused());
 await key('ArrowDown', 1, 200);
 await key('ArrowRight', 1, 400);
-check('Right off edge → page 2, first tile', (await focused()) === 'Play Limbo', await focused());
+check('Right off edge → page 2, first tile', (await focused()) === 'Play Mines', await focused());
 await key('ArrowLeft', 1, 400);
-check('Left off edge → back to page 1 last tile', (await focused()) === 'Play Dice', await focused());
+check('Left off edge → back to page 1 last tile', (await focused()) === 'Play Plinko', await focused());
 await key('ArrowDown', 1, 300);
 check('Down from bottom row → Next page button', (await focused()) === 'Next page', await focused());
 await key('Enter', 1, 400);
 check('Next page button flips to page 2', !!(await page.$('[data-game="wheel"]')));
 await key('ArrowUp', 1, 200);
-await key('ArrowLeft', 3, 150);
+await key('ArrowLeft', 1, 150);
 check('Navigate to Wheel', (await focused()) === 'Play Wheel', await focused());
 
 // Open Wheel, spin with pinch, go Back mid-spin: bet must still settle.
@@ -62,15 +62,15 @@ const recent = await page.evaluate(() => JSON.parse(localStorage.getItem('kmr.wa
 check('Mid-spin Back still settled the bet', recent === 1, `recent=${recent}, balance ${before} → ${await balance()}`);
 
 // Tabs: jump to Table Games, open Blackjack, deal + stand by D-pad only.
-await key('ArrowUp', 2, 200); // Wheel tile → Limbo → tab above it
+await key('ArrowUp', 2, 200); // Wheel tile → HiLo → tab above it
 check('Up from tile → tab', (await page.evaluate(() => document.activeElement?.getAttribute('role'))) === 'tab', await focused());
-await key('ArrowLeft', 2, 150); // to the first tab
-await key('ArrowRight', 1, 150); // Table Games
+await key('ArrowLeft', 3, 150); // to the first tab (My Games now exists)
+await key('ArrowRight', 2, 150); // Table Games
 check('Right along tabs → Table Games', (await focused()).includes('Table'), await focused());
 await key('Enter', 1, 400);
 check('Table Games tab selected', (await page.$eval('.tab.is-on', e => e.textContent)).includes('Table'));
 await key('ArrowDown', 1, 200);
-await key('ArrowLeft', 1, 120);
+await key('ArrowLeft', 2, 120);
 check('Down + Left → Blackjack tile', (await focused()) === 'Play Blackjack', await focused());
 await key('Enter', 1, 800);
 check('Blackjack focus on Deal', (await focused()).includes('Deal'), await focused());
@@ -87,19 +87,21 @@ if (bjPhase === 'player') {
   await key('ArrowRight');
   check('Right → Stand', (await focused()) === 'Stand', await focused());
   await key('Enter', 1, 2600);
-}
+} else await page.waitForTimeout(2600); // natural blackjack: dealer reveal plays out
 const bj = await page.evaluate(() => JSON.parse(localStorage.getItem('kmr.round.blackjack')));
 check('Blackjack hand settled', bj.phase === 'done', `result ${bj.hands.map(h => h.result).join(',')}`);
 check('Focus returns to Deal Again', (await focused()).includes('Deal'), await focused());
 await key('Escape', 1, 500);
 
 // Mines: bet, reveal centre tile, then cash out via D-pad if it was a gem.
-await key('ArrowUp', 1, 150); // Blackjack tile → tab above
-await key('ArrowLeft', 2, 150); // KMR Originals tab
+await key('ArrowUp', 1, 150); // Blackjack tile → tab above (My Games)
+await key('ArrowLeft', 3, 150);
+await key('ArrowRight', 1, 150); // Originals tab
 await key('Enter', 1, 300);
-await key('ArrowDown', 1, 200); // lands under the first tab: Sky Run
-await key('ArrowDown', 1, 150); // Crash
-await key('ArrowRight', 2, 150);
+await key('ArrowDown', 1, 200); // tile under Originals: Snakes
+await key('ArrowDown', 1, 150); // Penalty
+await key('ArrowRight', 3, 150); // Plinko, then off the edge onto page 2: Mines
+await page.waitForTimeout(300);
 check('Navigate to Mines tile', (await focused()) === 'Play Mines', await focused());
 await key('Enter', 1, 800);
 await key('Enter', 1, 400); // Bet

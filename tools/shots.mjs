@@ -16,7 +16,7 @@ page.on('pageerror', e => errors.push(`pageerror: ${e.message}`));
 page.on('console', m => m.type() === 'error' && errors.push(`console: ${m.text()}`));
 
 await page.goto(base, {waitUntil: 'load'});
-await page.evaluate(() => localStorage.clear());
+await page.evaluate(() => { localStorage.clear(); localStorage.setItem('kmr.dbOverride', 'http://127.0.0.1:9199'); localStorage.setItem('kmr.profile.v1', JSON.stringify({name: 'Tester', claimed: false, secret: 'x'.repeat(48), sound: false})); });
 await page.reload({waitUntil: 'load'});
 await page.waitForTimeout(400);
 await page.screenshot({path: `${out}/00-lobby.png`});

@@ -6,41 +6,14 @@
   height: 100%;
 }
 
-.sky-hud {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 6px;
-}
-
-.sky-hud div {
-  display: grid;
-  gap: 1px;
-  padding: 5px 9px;
-  border-radius: 6px;
-  background: var(--s1);
-}
-
-.sky-hud span {
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--faint);
-}
-
-.sky-hud b {
-  font-size: 15px;
-  font-weight: 900;
-  font-variant-numeric: tabular-nums;
-}
-
 .sky-view {
   position: relative;
   flex: 1;
   min-height: 0;
-  border-radius: 10px;
+  border-radius: 12px;
   overflow: hidden;
-  box-shadow: inset 0 0 0 1px var(--s2);
+  background: #2b8fe6;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.15);
 }
 
 .sky-view canvas {
@@ -49,37 +22,212 @@
   display: block;
 }
 
+/* Glass readouts sitting on the sky */
+.sky-hud {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  display: flex;
+  gap: 6px;
+  pointer-events: none;
+}
+
+.sky-hud-cell {
+  display: grid;
+  gap: 0;
+  padding: 5px 9px 6px;
+  border-radius: 8px;
+  background: rgba(5, 25, 45, 0.55);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(4px);
+}
+
+.sky-hud-cell span {
+  font-size: 9.5px;
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.sky-hud-cell b {
+  font-size: 14px;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}
+
+.sky-mult {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: grid;
+  justify-items: end;
+  padding: 6px 11px 7px;
+  border-radius: 10px;
+  background: rgba(5, 25, 45, 0.6);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18);
+  pointer-events: none;
+  transition: background 0.25s;
+}
+
+.sky-mult span {
+  font-size: 9.5px;
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.sky-mult b {
+  font-size: 22px;
+  font-weight: 900;
+  line-height: 1.05;
+  color: var(--gold);
+  font-variant-numeric: tabular-nums;
+}
+
+.sky-mult small {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.sky-mult.is-win {
+  background: rgba(0, 150, 40, 0.85);
+}
+
+.sky-mult.is-win b {
+  color: #fff;
+}
+
+.sky-mult.is-lose {
+  background: rgba(190, 20, 50, 0.85);
+}
+
+.sky-mult.is-lose b {
+  color: #fff;
+}
+
 .sky-banner {
   position: absolute;
-  top: 12px;
+  top: 66px;
   left: 50%;
   transform: translateX(-50%);
-  padding: 6px 14px;
+  padding: 7px 16px;
   border-radius: 999px;
-  background: rgba(0, 231, 1, 0.92);
+  background: rgba(0, 231, 1, 0.95);
   color: var(--green-ink);
   font-size: 13px;
   font-weight: 900;
   white-space: nowrap;
-  animation: rise 0.2s ease-out;
+  animation: rise 0.25s ease-out;
+  pointer-events: none;
 }
 
 .sky-banner.is-lose {
-  background: rgba(255, 77, 109, 0.95);
+  background: rgba(255, 60, 90, 0.95);
   color: #fff;
 }
 
 .sky-banner.is-idle {
-  background: rgba(7, 17, 25, 0.85);
-  color: var(--muted);
+  top: 44%;
+  background: rgba(5, 25, 45, 0.75);
+  color: #fff;
+}
+
+/* Big / Mega / Super Mega Win */
+.sky-tier {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 6px;
+  background: radial-gradient(circle at 50% 45%, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.15) 70%);
+  animation: fade 0.2s ease-out;
+  pointer-events: none;
+}
+
+.sky-tier-label {
+  font-size: 38px;
+  font-weight: 900;
+  font-style: italic;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  text-align: center;
+  background: linear-gradient(180deg, #fff6c8 0%, #ffd34d 45%, #f08c00 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 3px 0 #7a3d00) drop-shadow(0 0 18px rgba(255, 197, 49, 0.6));
+  animation: tier-pop 0.6s cubic-bezier(0.2, 1.5, 0.4, 1);
+}
+
+.sky-tier-amt {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  border-radius: 999px;
+  background: rgba(5, 13, 19, 0.85);
+  font-size: 20px;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  animation: rise 0.4s 0.25s ease-out both;
+}
+
+@keyframes tier-pop {
+  from {
+    transform: scale(0.3) rotate(-8deg);
+    opacity: 0;
+  }
 }
 
 .sky-rules {
-  padding: 9px 10px;
+  display: grid;
+  gap: 7px;
+  padding: 10px;
   border-radius: var(--r);
   background: var(--input);
   font-size: 11.5px;
-  font-weight: 600;
-  line-height: 1.45;
+  font-weight: 700;
   color: var(--muted);
+}
+
+.sky-rules > div {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.sky-chip {
+  display: grid;
+  place-items: center;
+  min-width: 26px;
+  height: 20px;
+  padding: 0 4px;
+  border-radius: 999px;
+  font-style: normal;
+  font-size: 10.5px;
+  font-weight: 900;
+}
+
+.sky-chip.is-add {
+  background: #2fe35a;
+  color: #03270d;
+}
+
+.sky-chip.is-mul {
+  background: var(--gold);
+  color: #4a2b00;
+}
+
+.sky-chip.is-rocket {
+  background: var(--red);
+  color: #fff;
+}
+
+.sky-rules .sky-rule-land {
+  display: block;
+  line-height: 1.35;
+  color: #fff;
 }
