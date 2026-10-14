@@ -4,7 +4,8 @@
 //   owners/<name>  private key of the device that owns the name (write-once, unreadable)
 //   stamp/<name>   {k: key, t: server time}, rewritten with every update as proof of ownership
 //   board/<name>   public stats shown on the leaderboard
-import {LEADERBOARD_URL} from '../config';
+import {leaderboardEnabled, request, TIMESTAMP} from './db';
+import {events, myTourney} from './events';
 import {profile} from './profile';
 import {wallet} from './wallet';
 
@@ -29,21 +30,11 @@ export interface BoardEntry {
   joined: number;
   updated: number;
   recent?: BoardBet[];
+  tid?: string; // tournament this player is in
+  tp?: number; // their profit in that tournament
 }
 
-function dbUrl(): string {
-  let override = '';
-  try {
-    override = localStorage.getItem('kmr.dbOverride') ?? '';
-  } catch {
-    /* ignore */
-  }
-  return (override || LEADERBOARD_URL).replace(/\/+$/, '');
-}
-
-export const leaderboardEnabled = () => dbUrl() !== '';
-
-export const TIMESTAMP = {'.sv': 'timestamp'};
+export {leaderboardEnabled, request, TIMESTAMP} from './db';
 
 function entry(): Omit<BoardEntry, 'updated'> & {updated: typeof TIMESTAMP} {
   const w = wallet.get();
@@ -60,18 +51,9 @@ function entry(): Omit<BoardEntry, 'updated'> & {updated: typeof TIMESTAMP} {
     resets: p.resets,
     joined: p.joined || Date.now(),
     updated: TIMESTAMP,
+    ...myTourney(),
     recent: w.recent.slice(0, 10).map(r => ({g: r.game.slice(0, 16), b: r.bet, m: Math.round(r.mult * 100) / 100, p: r.payout, t: r.at})),
   };
-}
-
-export async function request(path: string, init?: RequestInit, timeout = 8000): Promise<Response> {
-  const ctl = new AbortController();
-  const timer = setTimeout(() => ctl.abort(), timeout);
-  try {
-    return await fetch(`${dbUrl()}/${path}`, {...init, signal: ctl.signal});
-  } finally {
-    clearTimeout(timer);
-  }
 }
 
 export type NameStatus = 'free' | 'taken' | 'offline';
@@ -198,6 +180,17 @@ export function startSync() {
   profile.subscribe(() => {
     const p = profile.get();
     if (p.name) schedule();
+  });
+  // Join a new tournament on the board right away (not only after the next bet).
+  let tid = '';
+  events.subscribe(() => {
+    const t = events.get().tourney;
+    const id = t && t.status === 'live' ? t.id : '';
+    if (id && id !== tid) {
+      tid = id;
+      dirty = true;
+      schedule();
+    }
   });
   const flush = () => {
     if (!dirty || !profile.get().claimed) return;

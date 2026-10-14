@@ -1,7 +1,8 @@
 // Admin panel (only for the player named "kmr"): change any player's coins and luck, including your own.
 // Everything is D-pad driven: pick a player from the list or type their name on the on-screen keyboard.
 import {useCallback, useEffect, useRef, useState} from 'react';
-import {ADMIN, describe, fmtMins, pending, send, type Command} from '../lib/admin';
+import {ADMIN, announce, describe, endHappyHour, fmtMins, ordinal, payTourney, pending, send, startHappyHour, startTourney, type Command, type SendResult} from '../lib/admin';
+import {happyEnds, tourneyEnds, tourneyLive, useEvents} from '../lib/events';
 import {checkName, fetchBoard, type BoardEntry} from '../lib/leaderboard';
 import {LUCK_LEVELS, luckInfo, useLuck} from '../lib/luck';
 import {useProfile} from '../lib/profile';
@@ -9,14 +10,15 @@ import {sfx} from '../lib/sfx';
 import {focusDefault, focusEl} from '../lib/spatial';
 import {fmtCoins} from '../lib/util';
 import {toast, useWallet} from '../lib/wallet';
-import {Backspace, Clover, Coin, Crown, Gift, Keyboard, Refresh, Skull} from './icons';
+import {Backspace, Clover, Coin, Crown, Gift, Globe, Keyboard, Megaphone, Refresh, ShiftIcon, Skull, Trophy} from './icons';
 import './Admin.css';
 
 const AMOUNTS = [1_000, 10_000, 100_000, 1_000_000, 10_000_000];
 const DURATIONS = [5, 15, 60, 360, 1440];
 const short = (n: number) => (n >= 1e6 ? `${n / 1e6}M` : n >= 1e3 ? `${n / 1e3}K` : String(n));
 
-type Overlay = null | 'name' | 'amount';
+type Overlay = null | 'name' | 'amount' | 'text';
+const EVERYONE = '*';
 
 /** An overlay that lives in browser history, so the glasses' Back closes it. */
 function useOverlay() {
@@ -67,7 +69,9 @@ export default function Admin() {
   const [last, setLast] = useState<string | null>(null);
   const ov = useOverlay();
 
+  const everyone = target === EVERYONE;
   const self = target.toLowerCase() === me.toLowerCase();
+  const [msg, setMsg] = useState('');
   const entry = players?.find(p => p.name.toLowerCase() === target.toLowerCase()) ?? null;
 
   const load = useCallback(async () => setPlayers(await fetchBoard()), []);
@@ -76,7 +80,7 @@ export default function Admin() {
   }, [load]);
   useEffect(() => {
     setWaiting(null);
-    if (self) return;
+    if (self || target === EVERYONE) return;
     let live = true;
     void pending(target).then(g => live && setWaiting(g));
     return () => {
@@ -120,6 +124,12 @@ export default function Admin() {
         <button type="button" className="adm-typebtn" onClick={() => ov.show('name')}>
           <Keyboard size={16} /> Type a name
         </button>
+        <button type="button" className={`adm-row adm-all${everyone ? ' is-on' : ''}`} onClick={() => setTarget(EVERYONE)} aria-pressed={everyone}>
+          <b>
+            <Globe size={14} /> Everyone
+          </b>
+          <small>Happy hour · news · tournament</small>
+        </button>
         <div className="adm-list">
           <PlayerRow name={me} sub={`${fmtCoins(w.balance)} · you`} on={self} onPick={() => setTarget(me)} autoFocus />
           {players === null && <div className="adm-empty">Loading players…</div>}
@@ -130,6 +140,9 @@ export default function Admin() {
         </div>
       </aside>
 
+      {everyone ? (
+        <EveryonePanel players={players?.length ?? 0} msg={msg} onType={() => ov.show('text')} setMsg={setMsg} />
+      ) : (
       <section className="adm-panel">
         <header className="adm-target">
           <div className="adm-who">
@@ -225,6 +238,7 @@ export default function Admin() {
           {last ? `Last: ${last}` : 'Lucky players win more often in every game for as long as the luck lasts.'}
         </p>
       </section>
+      )}
 
       {ov.open === 'name' && (
         <NameKeyboard
@@ -232,6 +246,16 @@ export default function Admin() {
           onClose={ov.close}
           onPick={name => {
             setTarget(name);
+            ov.close();
+          }}
+        />
+      )}
+      {ov.open === 'text' && (
+        <TextKeyboard
+          start={msg}
+          onClose={ov.close}
+          onDone={t => {
+            setMsg(t);
             ov.close();
           }}
         />
@@ -367,6 +391,252 @@ function AmountPad({start, onClose, onPick}: {start: number; onClose: () => void
           </button>
           <button type="button" className="adm-act is-green" disabled={n <= 0} onClick={() => onPick(n)}>
             Use {n > 0 ? fmtCoins(n) : ''}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ---- Everyone: happy hour, announcements, tournament ---------------------------------
+const HAPPY_LEVELS = [1, 2, 3];
+const HAPPY_MINS = [15, 30, 60];
+const PRESETS = ['Happy hour is live! Go play 🍀', 'Tournament ends tonight. Last chance! 🏆', 'Welcome to KMR Casino! 👑'];
+const PRIZE_SETS = [
+  {label: '50K', prizes: [50_000, 25_000, 10_000]},
+  {label: '250K', prizes: [250_000, 100_000, 50_000]},
+  {label: '1M', prizes: [1_000_000, 500_000, 250_000]},
+];
+const LENGTHS = [
+  {label: '1 day', days: 1},
+  {label: '3 days', days: 3},
+  {label: '1 week', days: 7},
+];
+
+function left(ms: number): string {
+  const m = Math.max(1, Math.ceil(ms / 60_000));
+  if (m < 60) return `${m}m`;
+  const h = Math.floor(m / 60);
+  return h < 48 ? `${h}h ${m % 60}m` : `${Math.floor(h / 24)}d ${h % 24}h`;
+}
+
+function report(res: SendResult | 'none', ok: string) {
+  if (res === 'ok') {
+    sfx('cash');
+    toast(ok, 'win');
+  } else if (res === 'denied') {
+    sfx('lose');
+    toast('The database refused it: publish the new rules (see README)', 'error');
+  } else if (res === 'offline') {
+    sfx('lose');
+    toast("Couldn't reach the leaderboard. Try again", 'error');
+  }
+}
+
+function EveryonePanel({players, msg, setMsg, onType}: {players: number; msg: string; setMsg: (m: string) => void; onType: () => void}) {
+  const ev = useEvents();
+  const [, tick] = useState(0);
+  useEffect(() => {
+    const t = setInterval(() => tick(x => x + 1), 20_000);
+    return () => clearInterval(t);
+  }, []);
+  const [hl, setHl] = useState(1);
+  const [hm, setHm] = useState(30);
+  const [prize, setPrize] = useState(1);
+  const [len, setLen] = useState(2);
+  const [repeat, setRepeat] = useState(true);
+  const [busy, setBusy] = useState(false);
+  const go = async (fn: () => Promise<SendResult | 'none'>, ok: string) => {
+    if (busy) return;
+    setBusy(true);
+    report(await fn(), ok);
+    setBusy(false);
+  };
+  const now = Date.now();
+  const happyOn = !!ev.happy && now < happyEnds(ev.happy);
+  const t = ev.tourney;
+  const live = tourneyLive(t);
+  const ended = !!t && t.status === 'live' && !live;
+  const prizes = PRIZE_SETS[prize].prizes;
+  const k = (n: number) => (n >= 1e6 ? `${n / 1e6}M` : `${n / 1e3}K`);
+
+  return (
+    <section className="adm-panel">
+      <header className="adm-target is-all">
+        <div className="adm-who">
+          <b>Everyone</b>
+          <span className="adm-chip">{players} players</span>
+        </div>
+        <div className="adm-meta">
+          <span className="tone-muted">Reaches every player within seconds</span>
+        </div>
+      </header>
+
+      <div className="adm-sec">
+        <span className="adm-label">
+          <Clover size={11} /> Happy hour
+          {happyOn && (
+            <em className="tone-green">
+              {' '}
+              · {luckInfo(ev.happy!.level).name} live, {left(happyEnds(ev.happy) - now)} left
+            </em>
+          )}
+        </span>
+        <div className="adm-chips">
+          {HAPPY_LEVELS.map(l => (
+            <button key={l} type="button" className={`adm-chip-btn luck-good${hl === l ? ' is-on' : ''}`} onClick={() => setHl(l)} aria-pressed={hl === l}>
+              {luckInfo(l).name}
+            </button>
+          ))}
+          {HAPPY_MINS.map(m => (
+            <button key={m} type="button" className={`adm-chip-btn${hm === m ? ' is-on' : ''}`} onClick={() => setHm(m)} aria-pressed={hm === m}>
+              {fmtMins(m)}
+            </button>
+          ))}
+        </div>
+        <div className="adm-actions">
+          <button type="button" className="adm-act is-green" disabled={busy} onClick={() => void go(() => startHappyHour(hl, hm), `Happy hour started: everyone ${luckInfo(hl).name} for ${fmtMins(hm)}`)}>
+            {happyOn ? 'Restart' : 'Start'} happy hour
+          </button>
+          <button type="button" className="adm-act" disabled={busy || !happyOn} onClick={() => void go(endHappyHour, 'Happy hour ended')}>
+            End
+          </button>
+        </div>
+      </div>
+
+      <div className="adm-sec">
+        <span className="adm-label">
+          <Megaphone size={11} /> Announcement
+        </span>
+        <button type="button" className="adm-msg" onClick={onType} aria-label={msg ? `Message: ${msg}. Press to edit` : 'Type a message'}>
+          {msg || <i>Press to type a message…</i>}
+        </button>
+        <div className="adm-chips">
+          {PRESETS.map((p, i) => (
+            <button key={p} type="button" className="adm-chip-btn" onClick={() => setMsg(p)}>
+              {['Happy hour', 'Last chance', 'Welcome'][i]}
+            </button>
+          ))}
+          <button type="button" className="adm-act is-green adm-send" disabled={busy || !msg.trim()} onClick={() => void go(() => announce(msg.trim()), 'Announcement sent to everyone')}>
+            Send to everyone
+          </button>
+        </div>
+      </div>
+
+      <div className="adm-sec">
+        <span className="adm-label">
+          <Trophy size={11} /> Tournament
+          {t && (live || ended) && (
+            <em className={live ? 'tone-green' : 'tone-gold'}>
+              {' '}
+              · {live ? `live, ends in ${left(tourneyEnds(t) - now)}` : 'ended, paying out…'} · {t.prizes.map(k).join(' / ')}
+            </em>
+          )}
+          {t && t.status === 'paid' && t.last && t.last.length > 0 && <em className="tone-muted"> · last won by {t.last[0].name}</em>}
+        </span>
+        <div className="adm-chips">
+          {PRIZE_SETS.map((p, i) => (
+            <button key={p.label} type="button" className={`adm-chip-btn${prize === i ? ' is-on' : ''}`} onClick={() => setPrize(i)} aria-pressed={prize === i} aria-label={`Prizes ${p.prizes.map(k).join(', ')}`}>
+              🥇 {p.label}
+            </button>
+          ))}
+          {LENGTHS.map((l, i) => (
+            <button key={l.label} type="button" className={`adm-chip-btn${len === i ? ' is-on' : ''}`} onClick={() => setLen(i)} aria-pressed={len === i}>
+              {l.label}
+            </button>
+          ))}
+          <button type="button" className={`adm-chip-btn${repeat ? ' is-on' : ''}`} onClick={() => setRepeat(r => !r)} aria-pressed={repeat}>
+            ↻ Repeats
+          </button>
+        </div>
+        <div className="adm-actions">
+          <button
+            type="button"
+            className="adm-act is-green"
+            disabled={busy}
+            onClick={() =>
+              void go(
+                () => startTourney(LENGTHS[len].days, prizes, repeat),
+                `Tournament started: ${LENGTHS[len].label}, prizes ${prizes.map(k).join(' / ')}`,
+              )
+            }
+          >
+            {live ? 'Restart' : 'Start'} · {prizes.map(k).join('/')}
+          </button>
+          <button type="button" className="adm-act" disabled={busy || !t || t.status !== 'live'} onClick={() => void go(payTourney, 'Tournament ended and prizes paid')}>
+            End &amp; pay now
+          </button>
+        </div>
+        {t && t.status === 'paid' && t.last && t.last.length > 0 && (
+          <p className="adm-last">Last winners: {t.last.map((w, i) => `${ordinal(i + 1)} ${w.name} (${k(w.prize)})`).join(' · ')}</p>
+        )}
+      </div>
+    </section>
+  );
+}
+
+const TROWS = ['1234567890', 'qwertyuiop', 'asdfghjkl', 'zxcvbnm'];
+
+function TextKeyboard({start, onClose, onDone}: {start: string; onClose: () => void; onDone: (t: string) => void}) {
+  const [text, setText] = useState(start);
+  const [shift, setShift] = useState(!start);
+  const add = (ch: string) => {
+    sfx('key');
+    setText(x => (x.length < 120 ? x + ch : x));
+    if (/[a-z]/i.test(ch)) setShift(false);
+  };
+  return (
+    <div className="sheet-backdrop">
+      <div className="sheet adm-kb adm-tkb" role="dialog" aria-modal="true" aria-label="Type an announcement" data-focus-scope="modal">
+        <div className="adm-kb-field adm-text">
+          <span>{text || <i>Your message</i>}</span>
+          <small>{text.length}/120</small>
+        </div>
+        <div className="adm-keys">
+          {TROWS.map((row, r) => (
+            <div key={row} className="adm-krow">
+              {r === 3 && (
+                <button type="button" className={`adm-key is-fn${shift ? ' is-on' : ''}`} aria-label="Shift" aria-pressed={shift} onClick={() => setShift(x => !x)}>
+                  <ShiftIcon size={15} filled={shift} />
+                </button>
+              )}
+              {row.split('').map((ch, i) => {
+                const c = shift ? ch.toUpperCase() : ch;
+                return (
+                  <button key={ch} type="button" className="adm-key" data-autofocus={r === 1 && i === 0 ? '' : undefined} onClick={() => add(c)}>
+                    {c}
+                  </button>
+                );
+              })}
+              {r === 3 && (
+                <button type="button" className="adm-key is-fn" aria-label="Delete" onClick={() => setText(x => x.slice(0, -1))}>
+                  <Backspace size={16} />
+                </button>
+              )}
+            </div>
+          ))}
+          <div className="adm-krow">
+            {[',', '.', '!', '?', "'"].map(ch => (
+              <button key={ch} type="button" className="adm-key" onClick={() => add(ch)}>
+                {ch}
+              </button>
+            ))}
+            <button type="button" className="adm-key adm-space" aria-label="Space" onClick={() => add(' ')}>
+              space
+            </button>
+            {['🍀', '🏆', '🔥'].map(ch => (
+              <button key={ch} type="button" className="adm-key" onClick={() => add(ch)}>
+                {ch}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="adm-actions">
+          <button type="button" className="adm-act" onClick={onClose}>
+            Cancel
+          </button>
+          <button type="button" className="adm-act is-green" onClick={() => onDone(text.trim())}>
+            Done
           </button>
         </div>
       </div>

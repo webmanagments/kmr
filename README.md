@@ -35,6 +35,18 @@ The glasses that own the name **kmr** get a gold 👑 button in the top bar. It 
   for Lucky / Very lucky / Godlike, and about 42% / 35% for Unlucky / Cursed). Anyone with luck active sees a 🍀 or 💀 timer in their top bar.
 - **Give reset back** (their daily balance reset is ready again) and **Bonus ready** (their daily bonus can be claimed now).
 
+**Everyone** (top of the player list) has casino-wide controls:
+
+- **Happy hour:** everyone gets Lucky, Very lucky or Godlike for 15 min, 30 min or 1 hour. Every player gets a green
+  "Happy hour!" banner and a 🍀 Happy timer. A player's own luck (good or bad) takes priority while it lasts. **End** stops it early.
+- **Announcement:** type a message (up to 120 characters) on the on-screen keyboard or pick a preset, then **Send to everyone**.
+  It pops up as a gold banner on every player's glasses (players who open the casino within 6 hours still see it).
+- **Tournament:** pick the prizes (🥇 50K / 250K / 1M, with 2nd and 3rd at about half and a fifth), the length (1 day, 3 days,
+  1 week) and whether it **repeats**. It ranks profit made since the tournament started, shown in a **Tournament** tab
+  that opens first on the leaderboard with the time left and the prizes. When it ends, your glasses pay the top 3
+  automatically (players must be up to place). Prizes arrive like admin coins with a 🏆 message, and a repeating
+  tournament starts the next round right away. **End & pay now** finishes it early.
+
 Everything works on yourself too, applied instantly. For other players a command is delivered within about 15 seconds
 while they have the casino open, or the next time they open it (the panel shows how many are waiting).
 Admin balance changes don't count toward leaderboard profit; only bets do.

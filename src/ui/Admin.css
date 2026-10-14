@@ -358,3 +358,98 @@
   height: 42px;
   font-size: 18px;
 }
+
+/* Everyone */
+.adm-row.adm-all {
+  flex: none;
+  background: linear-gradient(90deg, rgba(20, 117, 225, 0.28), rgba(20, 117, 225, 0.08));
+}
+
+.adm-row.adm-all b {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.adm-row.adm-all.is-on {
+  box-shadow: inset 3px 0 0 #4da3ff;
+  background: linear-gradient(90deg, rgba(20, 117, 225, 0.42), rgba(20, 117, 225, 0.12));
+}
+
+.adm-target.is-all {
+  background: linear-gradient(120deg, rgba(20, 117, 225, 0.3), var(--s1) 60%);
+}
+
+.adm-panel .adm-sec {
+  gap: 5px;
+  padding: 8px 10px;
+}
+
+.adm-label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+.adm-label em {
+  font-style: normal;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.adm-msg {
+  min-height: 34px;
+  padding: 7px 10px;
+  border-radius: 8px;
+  background: var(--input);
+  box-shadow: inset 0 0 0 1px var(--s3);
+  font-size: 13px;
+  font-weight: 700;
+  text-align: left;
+  color: #fff;
+}
+
+.adm-msg i {
+  font-style: normal;
+  color: var(--faint);
+}
+
+.adm-send {
+  flex: 1;
+  height: 30px;
+  font-size: 12.5px;
+}
+
+.adm-panel .adm-chip-btn {
+  height: 28px;
+  padding: 0 9px;
+  font-size: 12px;
+}
+
+.adm-panel .adm-act {
+  height: 34px;
+}
+
+.adm-tkb {
+  width: 500px;
+}
+
+.adm-text span {
+  display: block;
+  min-height: 0;
+  font-size: 17px;
+  line-height: 1.3;
+  word-break: break-word;
+}
+
+.adm-space {
+  width: 120px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.adm-key.is-on {
+  background: var(--gold);
+  color: #3b2500;
+}

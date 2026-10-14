@@ -225,3 +225,21 @@ export function Keyboard({size = 16, ...p}: P) {
     </svg>
   );
 }
+
+export function Globe({size = 16, ...p}: P) {
+  return (
+    <svg {...base(size, p)}>
+      <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" strokeWidth="2" />
+      <path d="M3 12h18M12 3c2.6 2.6 3.8 5.6 3.8 9s-1.2 6.4-3.8 9c-2.6-2.6-3.8-5.6-3.8-9S9.4 5.6 12 3z" fill="none" stroke="currentColor" strokeWidth="1.8" />
+    </svg>
+  );
+}
+
+export function Megaphone({size = 16, ...p}: P) {
+  return (
+    <svg {...base(size, p)}>
+      <path d="M3 10v4h3l8 5V5L6 10z" fill="currentColor" />
+      <path d="M17.5 9a4 4 0 0 1 0 6M7 14.5l1.4 5h2.6l-1.2-4.4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  );
+}

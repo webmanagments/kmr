@@ -320,3 +320,50 @@
   font-size: 15px;
 }
 
+
+/* Tournament tab */
+.lb-tab.is-tourney {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--gold);
+}
+
+.lb-tab.is-tourney.is-on {
+  background: var(--gold);
+  color: #3b2500;
+}
+
+.lb-tourney {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 38px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  background: linear-gradient(90deg, rgba(255, 197, 49, 0.2), rgba(255, 197, 49, 0.05));
+  font-size: 12.5px;
+  font-weight: 800;
+  color: var(--gold);
+}
+
+.lb-prizes {
+  display: flex;
+  gap: 10px;
+}
+
+.lb-prizes b {
+  font-weight: 900;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+}
+
+.lb-tabs.has-5 {
+  grid-template-columns: 1.35fr 1fr 1fr 1fr 1fr;
+}
+
+.lb-tabs.has-5 .lb-tab {
+  justify-content: center;
+  font-size: 12px;
+}

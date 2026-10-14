@@ -4,6 +4,7 @@ import {GameArt} from './games/art';
 import {isAdmin, startGrants} from './lib/admin';
 import {leaderboardEnabled, startSync} from './lib/leaderboard';
 import {luckInfo, useLuck} from './lib/luck';
+import {onBanner, type Banner} from './lib/events';
 import {profile, useProfile} from './lib/profile';
 import {sfx, unlockAudio} from './lib/sfx';
 import {focusDefault, focusEl, focusIsLost, installSpatialNav, setEdgeHandler} from './lib/spatial';
@@ -66,6 +67,20 @@ export default function App() {
   const lastGame = useRef<string | null>(null);
   const modalOpener = useRef<HTMLElement | null>(null);
   const [toasts, setToasts] = useState<Toast[]>([]);
+  const [banner, setBanner] = useState<(Banner & {id: number}) | null>(null);
+
+  // Announcements, happy hours and tournaments pop up as a banner for a few seconds.
+  useEffect(() => {
+    let id = 0;
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    return onBanner(b => {
+      const mine = ++id;
+      setBanner({...b, id: mine});
+      sfx(b.kind === 'announce' ? 'gem' : 'bigwin');
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(() => setBanner(cur => (cur && cur.id === mine ? null : cur)), b.kind === 'announce' ? 9000 : 6500);
+    });
+  }, []);
 
   // History is the source of truth for Back: the glasses shell calls history.back().
   useEffect(() => {
@@ -199,6 +214,12 @@ export default function App() {
           {t.msg}
         </div>
       ))}
+      {banner && (
+        <div key={banner.id} className={`event-banner is-${banner.kind}`} role="status">
+          <b>{banner.title}</b>
+          <span>{banner.msg}</span>
+        </div>
+      )}
     </div>
   );
 
@@ -304,6 +325,7 @@ function TopBar({title, gameId, onWallet, onLeaders, onAdmin}: {title: string | 
         {lk.active !== 0 && (
           <span className={`luck-badge ${lk.active > 0 ? 'is-good' : 'is-bad'}`} aria-label={`${luckInfo(lk.active).name}, ${luckLeft} minutes left`}>
             {lk.active > 0 ? <Clover size={13} /> : <Skull size={13} />}
+            {lk.happy ? 'Happy ' : ''}
             {luckLeft >= 60 ? `${Math.round(luckLeft / 60)}h` : `${luckLeft}m`}
           </span>
         )}

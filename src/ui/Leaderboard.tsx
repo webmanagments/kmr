@@ -2,6 +2,7 @@ import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {GameArt} from '../games/art';
 import {gameName} from '../games/registry';
 import {fetchBoard, leaderboardEnabled, type BoardEntry} from '../lib/leaderboard';
+import {myTourney, tourneyEnds, tourneyLive, useEvents} from '../lib/events';
 import {profile, useProfile} from '../lib/profile';
 import {focusDefault, focusEl, focusIsLost} from '../lib/spatial';
 import {fmtCoins, fmtMult} from '../lib/util';
@@ -9,7 +10,7 @@ import {useWallet, wallet} from '../lib/wallet';
 import {Coin, Refresh, Trophy} from './icons';
 import './Leaderboard.css';
 
-type Tab = 'profit' | 'wins' | 'wagered' | 'live';
+type Tab = 'tourney' | 'profit' | 'wins' | 'wagered' | 'live';
 const TABS: {id: Tab; label: string}[] = [
   {id: 'profit', label: 'Profit'},
   {id: 'wins', label: 'Biggest win'},
@@ -39,6 +40,7 @@ function myEntry(): BoardEntry | null {
     joined: p.joined,
     updated: Date.now(),
     recent: w.recent.slice(0, 10).map(r => ({g: r.game, b: r.bet, m: r.mult, p: r.payout, t: r.at})),
+    ...myTourney(),
   };
 }
 
@@ -48,6 +50,13 @@ export function boardWithMe(list: BoardEntry[]): BoardEntry[] {
   if (!me) return list;
   const key = me.name.toLowerCase();
   return [...list.filter(e => e.name.toLowerCase() !== key), me];
+}
+
+function timeLeft(ms: number): string {
+  const m = Math.max(1, Math.ceil(ms / 60_000));
+  if (m < 60) return `${m}m`;
+  const h = Math.floor(m / 60);
+  return h < 48 ? `${h}h ${m % 60}m` : `${Math.floor(h / 24)}d ${h % 24}h`;
 }
 
 export function ago(t: number): string {
@@ -63,6 +72,7 @@ export function ago(t: number): string {
 const signed = (x: number) => `${x > 0 ? '+' : ''}${fmtCoins(x)}`;
 
 function sortFor(tab: Tab) {
+  if (tab === 'tourney') return (a: BoardEntry, b: BoardEntry) => (b.tp ?? 0) - (a.tp ?? 0) || b.profit - a.profit;
   if (tab === 'wins') return (a: BoardEntry, b: BoardEntry) => b.bestWin - a.bestWin || b.profit - a.profit;
   if (tab === 'wagered') return (a: BoardEntry, b: BoardEntry) => b.wagered - a.wagered || b.profit - a.profit;
   return (a: BoardEntry, b: BoardEntry) => b.profit - a.profit || b.wagered - a.wagered;
@@ -75,7 +85,12 @@ export default function Leaderboard({onPlayer}: {onPlayer: (key: string) => void
   const [state, setState] = useState<'loading' | 'ok' | 'error'>(cache ? 'ok' : 'loading');
   const [list, setList] = useState<BoardEntry[]>(cache?.list ?? []);
   const [at, setAt] = useState(cache?.at ?? 0);
-  const [tab, setTabState] = useState<Tab>(tabMemo);
+  const ev = useEvents();
+  const t = ev.tourney;
+  const hasTourney = !!t && (t.status === 'live' || !!t.last?.length);
+  const [tab, setTabState] = useState<Tab>(() => (hasTourney && tourneyLive(t) && tabMemo === 'profit' ? 'tourney' : tabMemo === 'tourney' && !hasTourney ? 'profit' : tabMemo));
+  const SHORT: Record<string, string> = {wins: 'Big wins', live: 'Recent'};
+  const tabs = hasTourney ? [{id: 'tourney' as Tab, label: 'Tournament'}, ...TABS.map(x => ({...x, label: SHORT[x.id] ?? x.label}))] : TABS;
   const [page, setPage] = useState(0);
   const [, tick] = useState(0);
   const loading = useRef(false);
@@ -112,7 +127,10 @@ export default function Leaderboard({onPlayer}: {onPlayer: (key: string) => void
   const waiting = enabled && state === 'loading' && list.length === 0;
   const all = useMemo(() => (waiting ? [] : boardWithMe(list)), [waiting, list, p.name, p.resets]); // eslint-disable-line react-hooks/exhaustive-deps
   const myKey = p.name?.toLowerCase() ?? '';
-  const ranked = useMemo(() => [...all].sort(sortFor(tab === 'live' ? 'profit' : tab)), [all, tab]);
+  const ranked = useMemo(
+    () => [...(tab === 'tourney' ? all.filter(e => t && e.tid === t.id && t.status === 'live') : all)].sort(sortFor(tab === 'live' ? 'profit' : tab)),
+    [all, tab, t],
+  );
   const live = useMemo(
     () =>
       all
@@ -123,9 +141,10 @@ export default function Leaderboard({onPlayer}: {onPlayer: (key: string) => void
   );
 
   const rows = tab === 'live' ? live : ranked;
-  const pages = Math.max(1, Math.ceil(rows.length / PER_PAGE));
+  const per = tab === 'tourney' ? PER_PAGE - 1 : PER_PAGE; // the prize strip takes a row
+  const pages = Math.max(1, Math.ceil(rows.length / per));
   const pg = Math.min(page, pages - 1);
-  const slice = rows.slice(pg * PER_PAGE, (pg + 1) * PER_PAGE);
+  const slice = rows.slice(pg * per, (pg + 1) * per);
   const myRank = ranked.findIndex(e => e.name.toLowerCase() === myKey);
   const meVisible = tab !== 'live' && slice.some(e => 'name' in e && e.name.toLowerCase() === myKey);
 
@@ -149,8 +168,11 @@ export default function Leaderboard({onPlayer}: {onPlayer: (key: string) => void
     });
   }, [state, list.length]);
 
-  const valueOf = (e: BoardEntry) => (tab === 'wins' ? fmtCoins(e.bestWin) : tab === 'wagered' ? fmtCoins(e.wagered) : signed(e.profit));
-  const toneOf = (e: BoardEntry) => (tab === 'profit' ? (e.profit > 0 ? 'tone-green' : e.profit < 0 ? 'tone-red' : '') : '');
+  const valueOf = (e: BoardEntry) => (tab === 'wins' ? fmtCoins(e.bestWin) : tab === 'wagered' ? fmtCoins(e.wagered) : tab === 'tourney' ? signed(e.tp ?? 0) : signed(e.profit));
+  const toneOf = (e: BoardEntry) => {
+    const v = tab === 'tourney' ? (e.tp ?? 0) : e.profit;
+    return tab === 'profit' || tab === 'tourney' ? (v > 0 ? 'tone-green' : v < 0 ? 'tone-red' : '') : '';
+  };
 
   return (
     <div className="lb">
@@ -178,10 +200,11 @@ export default function Leaderboard({onPlayer}: {onPlayer: (key: string) => void
         )}
       </div>
 
-      <div className="lb-tabs" role="tablist" aria-label="Leaderboard type">
-        {TABS.map(t => (
-          <button key={t.id} type="button" role="tab" aria-selected={tab === t.id} className={`lb-tab${tab === t.id ? ' is-on' : ''}`} onClick={() => setTab(t.id)}>
-            {t.label}
+      <div className={`lb-tabs${hasTourney ? ' has-5' : ''}`} role="tablist" aria-label="Leaderboard type">
+        {tabs.map(x => (
+          <button key={x.id} type="button" role="tab" aria-selected={tab === x.id} className={`lb-tab${tab === x.id ? ' is-on' : ''}${x.id === 'tourney' ? ' is-tourney' : ''}`} onClick={() => setTab(x.id)}>
+            {x.id === 'tourney' && <Trophy size={12} />}
+            {x.label}
           </button>
         ))}
       </div>
@@ -200,9 +223,32 @@ export default function Leaderboard({onPlayer}: {onPlayer: (key: string) => void
             <div className="lb-note">The global leaderboard isn't switched on yet. Your name and stats are saved and will appear for everyone once it is.</div>
           )}
           {enabled && state === 'loading' && list.length === 0 && <div className="lb-note">Loading players…</div>}
+          {tab === 'tourney' && t && (
+            <div className="lb-tourney">
+              {t.status === 'live' ? (
+                <>
+                  <span>{tourneyLive(t) ? `Ends in ${timeLeft(tourneyEnds(t) - Date.now())}` : 'Ended · prizes on the way'}</span>
+                  <span className="lb-prizes">
+                    {t.prizes.map((p, i) => (
+                      <b key={i}>
+                        {['🥇', '🥈', '🥉'][i]} {fmtCoins(p)}
+                      </b>
+                    ))}
+                  </span>
+                </>
+              ) : (
+                <span>
+                  Last winners: {(t.last ?? []).map((w, i) => `${['🥇', '🥈', '🥉'][i]} ${w.name} +${fmtCoins(w.prize)}`).join('   ')}
+                </span>
+              )}
+            </div>
+          )}
+          {tab === 'tourney' && t?.status === 'live' && ranked.length === 0 && state !== 'loading' && (
+            <div className="lb-note">No one has played yet. Profit you make from now on counts.</div>
+          )}
           {tab !== 'live'
             ? (slice as BoardEntry[]).map((e, i) => {
-                const rank = pg * PER_PAGE + i + 1;
+                const rank = pg * per + i + 1;
                 const key = e.name.toLowerCase();
                 return (
                   <button

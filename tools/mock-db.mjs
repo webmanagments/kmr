@@ -4,9 +4,9 @@
 import http from 'node:http';
 
 const port = Number(process.argv[2] ?? 9199);
-const db = {owners: {}, stamp: {}, board: {}, grants: {}};
+const db = {owners: {}, stamp: {}, board: {}, grants: {}, events: {}};
 const ADMIN = 'kmr';
-const GRANT_TYPES = ['add', 'remove', 'set', 'luck', 'reset', 'bonus'];
+const GRANT_TYPES = ['add', 'remove', 'set', 'luck', 'reset', 'bonus', 'prize'];
 const NAME = /^[a-z0-9_]{3,12}$/;
 const BOARD_KEYS = ['name', 'profit', 'balance', 'wagered', 'bets', 'wins', 'bestWin', 'bestMult', 'resets', 'joined', 'updated'];
 
@@ -31,13 +31,17 @@ function check(updates) {
       if (rest.length !== 1) return 'bad grant path';
       continue;
     }
+    if (top === 'events') {
+      if (rest.length) return 'bad event path';
+      continue;
+    }
     if (rest.length) return 'deep paths not used by the app';
     if (top === 'owners') {
       if (db.owners[name] !== undefined) return 'owner exists';
       if (!NAME.test(name) || typeof val !== 'string' || val.length < 20 || val.length > 64) return 'bad owner';
       owners[name] = val;
     } else if (top === 'stamp') stamp[name] = val;
-    else if (top !== 'board' && top !== 'grants') return 'unknown top';
+    else if (top !== 'board' && top !== 'grants' && top !== 'events') return 'unknown top';
   }
   for (const [path, val] of Object.entries(res)) {
     const [top, name, id] = path.split('/');
@@ -51,10 +55,23 @@ function check(updates) {
       if (!s || s.t !== now || s.k !== db.owners[ADMIN]) return 'grant denied (not admin)';
       if (!/^[a-z0-9]{6,24}$/.test(id)) return 'bad grant id';
       if (!GRANT_TYPES.includes(val.type) || val.t !== now) return 'bad grant';
-      for (const k of Object.keys(val)) if (!['type', 'amount', 'level', 'mins', 'by', 't'].includes(k)) return `grant extra ${k}`;
+      for (const k of Object.keys(val)) if (!['type', 'amount', 'level', 'mins', 'by', 't', 'place'].includes(k)) return `grant extra ${k}`;
       if ('amount' in val && !(typeof val.amount === 'number' && val.amount >= 0 && val.amount <= 1e12)) return 'bad amount';
       if ('level' in val && !(val.level >= -2 && val.level <= 3)) return 'bad level';
       if ('mins' in val && !(val.mins >= 0 && val.mins <= 10080)) return 'bad mins';
+      continue;
+    }
+    if (top === 'events') {
+      const s = stamp[ADMIN];
+      if (!s || s.t !== now || s.k !== db.owners[ADMIN]) return 'event denied (not admin)';
+      if (!['happy', 'announce', 'tourney'].includes(name)) return 'bad event';
+      if (val === null) continue;
+      const allowed = ['level', 'mins', 'start', 'msg', 't', 'by', 'id', 'days', 'prizes', 'status', 'repeat', 'last'];
+      for (const k of Object.keys(val)) if (!allowed.includes(k)) return `event extra ${k}`;
+      if ('start' in val && val.start !== now && val.start !== db.events[name]?.start) return 'start must be now';
+      if ('t' in val && val.t !== now) return 't must be now';
+      if ('msg' in val && (typeof val.msg !== 'string' || !val.msg.length || val.msg.length > 120)) return 'bad msg';
+      if ('status' in val && !['live', 'paid'].includes(val.status)) return 'bad status';
       continue;
     }
     if (top === 'stamp') {
@@ -67,7 +84,7 @@ function check(updates) {
       if (!BOARD_KEYS.every(k => k in val)) return 'missing fields';
       if (val.updated !== now) return 'updated must be now';
       if (typeof val.name !== 'string' || val.name.toLowerCase() !== name) return 'bad name';
-      for (const k of Object.keys(val)) if (![...BOARD_KEYS, 'recent'].includes(k)) return `extra field ${k}`;
+      for (const k of Object.keys(val)) if (![...BOARD_KEYS, 'recent', 'tid', 'tp'].includes(k)) return `extra field ${k}`;
       for (const k of BOARD_KEYS.filter(k => k !== 'name')) if (typeof val[k] !== 'number') return `${k} not a number`;
       if (val.recent) {
         const items = Array.isArray(val.recent) ? val.recent : Object.values(val.recent);
@@ -90,13 +107,14 @@ http
       db.stamp = {};
       db.board = {};
       db.grants = {};
+      db.events = {};
       return res.end('ok');
     }
     const url = new URL(req.url, 'http://x');
     const path = url.pathname.replace(/^\/|\.json$/g, '');
     if (req.method === 'GET') {
       const parts = path.split('/').filter(Boolean);
-      if (parts[0] !== 'board' && parts[0] !== 'grants' && parts[0] !== '__all') {
+      if (parts[0] !== 'board' && parts[0] !== 'grants' && parts[0] !== 'events' && parts[0] !== '__all') {
         res.statusCode = 401;
         return res.end(JSON.stringify({error: 'Permission denied'}));
       }
@@ -121,7 +139,8 @@ http
             if (val === null) delete db.grants[name][id];
             else db.grants[name][id] = val;
             if (!Object.keys(db.grants[name]).length) delete db.grants[name];
-          } else db[top][name] = val;
+          } else if (val === null) delete db[top][name];
+          else db[top][name] = val;
         }
         res.end(JSON.stringify(out.res));
       });

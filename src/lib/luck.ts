@@ -5,6 +5,7 @@
 // pays least. Step games (Mines, Towers, Chicken…) use `rescue()` and `jinx()` at the moment a
 // tile or step is revealed. With no luck active, every game is exactly as fair as before.
 import {useSyncExternalStore} from 'react';
+import {events, happyEnds, happyLevel} from './events';
 import {loadJSON, rand, saveJSON} from './util';
 
 const KEY = 'kmr.luck.v1';
@@ -58,9 +59,9 @@ scheduleExpiry();
 export const luck = {
   get: () => state,
   subscribe,
-  /** The level in force right now (0 once it has run out). */
+  /** The level in force right now: a personal effect first, otherwise a happy hour (0 when neither). */
   level(): number {
-    return state.level && Date.now() < state.until ? state.level : 0;
+    return state.level && Date.now() < state.until ? state.level : happyLevel();
   },
   set(level: number, mins: number, by: string) {
     set(level && mins > 0 ? {level, until: Date.now() + mins * 60_000, by} : {level: 0, until: 0, by});
@@ -72,9 +73,12 @@ export const luck = {
   },
 };
 
-export function useLuck(): LuckState & {active: number} {
+export function useLuck(): LuckState & {active: number; happy: boolean} {
   const s = useSyncExternalStore(subscribe, () => state, () => state);
-  return {...s, active: s.level && Date.now() < s.until ? s.level : 0};
+  const ev = useSyncExternalStore(events.subscribe, events.get, events.get);
+  const mine = s.level && Date.now() < s.until ? s.level : 0;
+  if (mine || !ev.happy || Date.now() >= happyEnds(ev.happy)) return {...s, active: mine, happy: false};
+  return {level: ev.happy.level, until: happyEnds(ev.happy), by: ev.happy.by, active: ev.happy.level, happy: true};
 }
 
 /**
