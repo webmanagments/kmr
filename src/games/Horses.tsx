@@ -1,6 +1,7 @@
 import {useEffect, useRef, useState} from 'react';
 import {useFlash, useSettler} from '../lib/hooks';
 import {fmtMult, money, rand, reducedMotion, weightedIndex} from '../lib/util';
+import {fate} from '../lib/luck';
 import {useWallet, wallet} from '../lib/wallet';
 import {AutoRow, AutoSheet, useAutoBet} from '../ui/auto';
 import {BetAmount, Field, PlayButton} from '../ui/controls';
@@ -82,7 +83,7 @@ export default function Horses() {
     if (busy || race !== null) return;
     const stake = betAmount;
     if (!wallet.debit(stake)) return;
-    const order = finishOrder(field.p);
+    const order = fate(() => finishOrder(field.p), o => (o[0] === pick ? 1 : 0));
     const won = order[0] === pick;
     const mult = field.odds[pick];
     const payout = won ? money(stake * mult) : 0;

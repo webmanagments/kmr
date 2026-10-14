@@ -3,6 +3,7 @@ import {useFlash, usePersistent, useSettler} from '../lib/hooks';
 import {sfx} from '../lib/sfx';
 import {focusDefault, focusEl} from '../lib/spatial';
 import {HOUSE, fmtCoins, fmtMult, money, randInt, reducedMotion} from '../lib/util';
+import {fate} from '../lib/luck';
 import {wallet} from '../lib/wallet';
 import {AutoRow, AutoSheet, useAutoBet} from '../ui/auto';
 import {BetAmount, ListStepper, PlayButton, Readout, Segmented} from '../ui/controls';
@@ -201,7 +202,7 @@ export default function Penalty() {
 
   const shoot = (zone: number) => {
     if (!playing || shooting) return;
-    const {zones, pose} = coverFor(round.keeper);
+    const {zones, pose} = fate(() => coverFor(round.keeper), c => (c.zones.includes(zone) ? 0 : 1));
     const shot: Shot = {zone, goal: !zones.includes(zone), pose};
     setShooting(shot);
     setKickKey(k => k + 1);

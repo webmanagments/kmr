@@ -1,6 +1,7 @@
 import {useState} from 'react';
 import {useFlash, useSettler} from '../lib/hooks';
 import {HOUSE, money, rand} from '../lib/util';
+import {fate} from '../lib/luck';
 import {useWallet, wallet} from '../lib/wallet';
 import {AutoRow, AutoSheet, useAutoBet} from '../ui/auto';
 import {BetAmount, ListStepper, PlayButton, ProfitOnWin, Segmented} from '../ui/controls';
@@ -32,7 +33,10 @@ export default function Dice() {
     if (busy) return;
     const stake = betAmount;
     if (!wallet.debit(stake)) return;
-    const value = Math.floor(rand() * 10001) / 100;
+    const value = fate(
+      () => Math.floor(rand() * 10001) / 100,
+      v => ((mode === 'over' ? v > target : v < target) ? 1 : 0),
+    );
     const won = mode === 'over' ? value > target : value < target;
     const payout = won ? money(stake * mult) : 0;
     setBusy(true);

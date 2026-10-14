@@ -1,5 +1,6 @@
 import {useState} from 'react';
 import {drawCard} from '../lib/cards';
+import {fate} from '../lib/luck';
 import {useFlash, useSettler} from '../lib/hooks';
 import {fmtCoins, money, reducedMotion} from '../lib/util';
 import {toast, useWallet, wallet} from '../lib/wallet';
@@ -46,15 +47,15 @@ export default function DragonTiger() {
   const deal = () => {
     if (busy || !bets.length) return;
     if (!wallet.debit(total)) return;
-    const d = drawCard();
-    const t = drawCard();
-    const winner: Spot = d.rank > t.rank ? 'dragon' : t.rank > d.rank ? 'tiger' : 'tie';
-    const payout = money(
+    const winnerOf = (d: CardT, t: CardT): Spot => (d.rank > t.rank ? 'dragon' : t.rank > d.rank ? 'tiger' : 'tie');
+    const payFor = (w: Spot) =>
       bets.reduce((s, b) => {
-        if (winner === 'tie') return s + (b.spot === 'tie' ? b.amt * 9 : b.amt * 0.5);
-        return s + (b.spot === winner ? b.amt * 2 : 0);
-      }, 0),
-    );
+        if (w === 'tie') return s + (b.spot === 'tie' ? b.amt * 9 : b.amt * 0.5);
+        return s + (b.spot === w ? b.amt * 2 : 0);
+      }, 0);
+    const [d, t] = fate(() => [drawCard(), drawCard()], ([a, b]) => payFor(winnerOf(a, b)));
+    const winner = winnerOf(d, t);
+    const payout = money(payFor(winner));
     const stake = total;
     setCards({d, t, winner});
     setShown(0);

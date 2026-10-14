@@ -1,6 +1,7 @@
 import {useEffect, useState} from 'react';
 import {useFlash, usePersistent, useSettler} from '../lib/hooks';
 import {HOUSE, fmtCoins, fmtMult, money, rand, reducedMotion} from '../lib/util';
+import {fate} from '../lib/luck';
 import {useWallet, wallet} from '../lib/wallet';
 import {AutoRow, AutoSheet, useAutoBet} from '../ui/auto';
 import {BetAmount, ListStepper, PlayButton, Readout, Segmented} from '../ui/controls';
@@ -57,7 +58,7 @@ export default function Coinflip() {
       if (!wallet.debit(stake)) return;
       r = {phase: 'playing', stake, mult: 1, flips: []};
     }
-    const result: Side = rand() < 0.5 ? 'H' : 'T';
+    const result: Side = fate<Side>(() => (rand() < 0.5 ? 'H' : 'T'), r => (r === side ? 1 : 0));
     const ok = result === side;
     setBusy(true);
     setSpin({to: result, n: (spin?.n ?? 0) + 1});

@@ -2,6 +2,7 @@ import {useEffect, useRef, useState} from 'react';
 import {useFlash, usePersistent} from '../lib/hooks';
 import {focusDefault, focusEl} from '../lib/spatial';
 import {HOUSE, fmtCoins, fmtMult, money, randInt} from '../lib/util';
+import {fate} from '../lib/luck';
 import {useWallet, wallet} from '../lib/wallet';
 import {AutoRow, AutoSheet, useAutoBet} from '../ui/auto';
 import {BetAmount, ListStepper, PlayButton, Readout} from '../ui/controls';
@@ -77,7 +78,7 @@ export default function HiLo() {
   const guess = (which: 'hi' | 'lo') => {
     if (!playing) return;
     const o = which === 'hi' ? opt.hi : opt.lo;
-    const next = draw();
+    const next = fate(draw, c => (o.test(c.rank, current.rank) ? 1 : 0));
     const ok = o.test(next.rank, current.rank);
     const steps = [...round.steps, {card: next, guess: which, ok}];
     if (!ok) {

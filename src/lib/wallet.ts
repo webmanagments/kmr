@@ -146,6 +146,15 @@ export const wallet = {
     return true;
   },
 
+  /** Admin: change the balance directly (lifetime stats are untouched). */
+  adminSet(balance: number) {
+    set({...state, balance: money(Math.max(0, Math.min(1e12, balance)))});
+  },
+  /** Admin: make the daily bonus claimable right now. */
+  adminBonusReady() {
+    set({...state, lastBonus: 0});
+  },
+
   /** Refill to the starting balance. Lifetime stats (profit, bets…) are kept. */
   reset() {
     set({...state, balance: START_BALANCE});

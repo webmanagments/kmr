@@ -2,6 +2,7 @@ import {useEffect, useRef, useState} from 'react';
 import {useFlash, usePersistent} from '../lib/hooks';
 import {focusDefault, focusEl} from '../lib/spatial';
 import {HOUSE, fmtCoins, fmtMult, money, randInt, shuffle} from '../lib/util';
+import {jinx, rescue} from '../lib/luck';
 import {useWallet, wallet} from '../lib/wallet';
 import {AutoRow, AutoSheet, useAutoBet} from '../ui/auto';
 import {BetAmount, ListStepper, PlayButton, Readout, Segmented} from '../ui/controls';
@@ -96,12 +97,20 @@ export default function Towers() {
   const choose = (col: number) => {
     if (!playing) return;
     const row = round.picks.length;
-    if (!round.safe[row].includes(col)) {
+    // Luck swaps which tiles on this floor are safe before the pick is revealed.
+    let safe = round.safe;
+    const rowSafe = safe[row];
+    if (!rowSafe.includes(col) && rescue()) safe = safe.map((r, k) => (k === row ? [...r.slice(1), col] : r));
+    else if (rowSafe.includes(col) && jinx()) {
+      const bad = Array.from({length: cfg.tiles}, (_, k) => k).filter(k => !rowSafe.includes(k));
+      if (bad.length) safe = safe.map((r, k) => (k === row ? r.map(c => (c === col ? bad[randInt(bad.length)] : c)) : r));
+    }
+    if (!safe[row].includes(col)) {
       wallet.settle('towers', round.stake, 0);
-      setRound({...round, phase: 'over', hit: [row, col]});
+      setRound({...round, safe, phase: 'over', hit: [row, col]});
       return;
     }
-    const next = {...round, picks: [...round.picks, col]};
+    const next = {...round, safe, picks: [...round.picks, col]};
     if (next.picks.length === LEVELS) cashout(next);
     else {
       setRound(next);

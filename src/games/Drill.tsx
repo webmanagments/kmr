@@ -2,6 +2,7 @@ import {useEffect, useRef, useState} from 'react';
 import {useFlash, useSettler} from '../lib/hooks';
 import {sfx} from '../lib/sfx';
 import {HOUSE, fmtMult, money, rand, reducedMotion} from '../lib/util';
+import {fate} from '../lib/luck';
 import {wallet} from '../lib/wallet';
 import {AutoRow, AutoSheet, useAutoBet} from '../ui/auto';
 import {BetAmount, ListStepper, PlayButton, ProfitOnWin, Readout, Segmented} from '../ui/controls';
@@ -61,7 +62,10 @@ export default function Drill() {
     if (!done) return;
     const stake = wallet.get().betAmount;
     if (!wallet.debit(stake)) return;
-    const results = [depthRoll(), depthRoll(), depthRoll()];
+    const results = fate(
+      () => [depthRoll(), depthRoll(), depthRoll()],
+      r => (r[mine] >= target ? 1 : 0),
+    );
     const r: Run = {key: Date.now(), stake, target, mine, results, t0: performance.now()};
     const myDepth = results[mine];
     const won = myDepth >= target;

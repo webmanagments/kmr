@@ -1,6 +1,7 @@
 import {useState, type ReactNode} from 'react';
 import {useFlash, useSettler} from '../lib/hooks';
 import {money, reducedMotion, weightedIndex} from '../lib/util';
+import {fate} from '../lib/luck';
 import {useWallet, wallet} from '../lib/wallet';
 import {AutoRow, AutoSheet, useAutoBet} from '../ui/auto';
 import {BetAmount, PlayButton, Readout} from '../ui/controls';
@@ -108,19 +109,26 @@ export default function Slots() {
     const stake = betAmount;
     if (!wallet.debit(stake)) return;
     const lineBet = stake / LINES.length;
-    const next = [0, 1, 2].map(() => [roll(), roll(), roll()]); // next[col][row]
-    let pay = 0;
-    const hitLines: number[] = [];
-    LINES.forEach((line, li) => {
-      const [a, b, c] = line.map(([col, row]) => next[col][row]);
-      if (a === b && b === c) {
-        pay += PAYS[a] * lineBet;
-        hitLines.push(li);
-      } else if (a === 0 && b === 0) {
-        pay += 0.5 * lineBet;
-        hitLines.push(li);
-      }
-    });
+    const score = (g: number[][]) => {
+      let pay = 0;
+      const hitLines: number[] = [];
+      LINES.forEach((line, li) => {
+        const [a, b, c] = line.map(([col, row]) => g[col][row]);
+        if (a === b && b === c) {
+          pay += PAYS[a] * lineBet;
+          hitLines.push(li);
+        } else if (a === 0 && b === 0) {
+          pay += 0.5 * lineBet;
+          hitLines.push(li);
+        }
+      });
+      return {pay, hitLines};
+    };
+    const next = fate(
+      () => [0, 1, 2].map(() => [roll(), roll(), roll()]), // next[col][row]
+      g => score(g).pay,
+    );
+    const {pay, hitLines} = score(next);
     const payout = money(pay);
     // Each strip: final 3 symbols on top, random filler below; animates downward to rest at 0.
     setStrips(next.map(col => [...col, ...Array.from({length: STRIP}, roll)]));

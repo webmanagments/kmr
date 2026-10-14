@@ -1,6 +1,7 @@
 import {useEffect, useRef, useState} from 'react';
 import {useFlash} from '../lib/hooks';
 import {HOUSE, fmtCoins, fmtMult, money, rand} from '../lib/util';
+import {fate} from '../lib/luck';
 import {useWallet, wallet} from '../lib/wallet';
 import {AutoRow, AutoSheet, useAutoBet} from '../ui/auto';
 import {BetAmount, ListStepper, PlayButton, ProfitOnWin} from '../ui/controls';
@@ -108,8 +109,10 @@ export default function Crash() {
     if (live.current.phase === 'flying') return;
     const stake = betAmount;
     if (!wallet.debit(stake)) return;
-    const r = rand();
-    const crashAt = Math.max(1, Math.floor((HOUSE / (1 - r)) * 100) / 100);
+    const crashAt = fate(
+      () => Math.max(1, Math.floor((HOUSE / (1 - rand())) * 100) / 100),
+      v => v,
+    );
     live.current = {phase: 'flying', start: performance.now(), crashAt, stake, cashedAt: null, auto, settled: false};
     lastPaint.current = 0;
     setView({phase: 'flying', elapsed: 0, cashedAt: null, crashAt});

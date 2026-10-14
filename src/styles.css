@@ -1479,3 +1479,31 @@ button:focus {
 .modal-sound + .modal-close {
   margin-left: 0;
 }
+
+/* Top bar: admin button and the luck badge */
+.icon-btn.is-admin {
+  color: var(--gold);
+  background: rgba(255, 197, 49, 0.16);
+}
+
+.luck-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 26px;
+  padding: 0 9px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.luck-badge.is-good {
+  background: rgba(0, 231, 1, 0.16);
+  color: var(--green);
+}
+
+.luck-badge.is-bad {
+  background: rgba(255, 77, 109, 0.16);
+  color: var(--red);
+}

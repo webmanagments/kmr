@@ -1,5 +1,6 @@
 import {useEffect, useRef, useState} from 'react';
 import {drawCard, handTotal, isBlackjack} from '../lib/cards';
+import {fate} from '../lib/luck';
 import {useFlash, usePersistent, useSettler} from '../lib/hooks';
 import {focusDefault, focusEl} from '../lib/spatial';
 import {money} from '../lib/util';
@@ -75,8 +76,25 @@ export default function Blackjack() {
     // Dealer draws to 17 (stands on all 17s), then every hand is settled.
     const natural = r.hands.length === 1 && isBlackjack(r.hands[0].cards);
     const live = !natural && r.hands.some(h => handTotal(h.cards).total <= 21);
-    const dealer = [...r.dealer];
-    if (live) while (handTotal(dealer).total < 17) dealer.push(drawCard());
+    const playDealer = () => {
+      const dl = [...r.dealer];
+      if (live) while (handTotal(dl).total < 17) dl.push(drawCard());
+      return dl;
+    };
+    const payWith = (dl: CardT[]) => {
+      const dt = handTotal(dl).total;
+      const bj = isBlackjack(dl);
+      return r.hands.reduce((s, h) => {
+        const p = handTotal(h.cards).total;
+        const nat = isBlackjack(h.cards) && r.hands.length === 1;
+        if (p > 21) return s;
+        if (nat && !bj) return s + h.stake * 2.5;
+        if (bj && !nat) return s;
+        if (dt > 21 || p > dt) return s + h.stake * 2;
+        return p === dt ? s + h.stake : s;
+      }, 0);
+    };
+    const dealer = fate(playDealer, payWith);
     const d = handTotal(dealer).total;
     const dealerBJ = isBlackjack(dealer);
     let totalPay = 0;
@@ -122,8 +140,14 @@ export default function Blackjack() {
   const deal = () => {
     const stake = betAmount;
     if (!wallet.debit(stake)) return;
-    const player = [drawCard(), drawCard()];
-    const dealer = [drawCard(), drawCard()];
+    // Luck: a stronger starting hand for the player, and no dealer blackjack.
+    const [player, dealer] = fate(
+      () => [
+        [drawCard(), drawCard()],
+        [drawCard(), drawCard()],
+      ],
+      ([p, d]) => (isBlackjack(p) ? 30 : handTotal(p).total) - (isBlackjack(d) ? 40 : 0),
+    );
     const r: Round = {phase: 'player', hands: [{cards: player, stake, done: false, doubled: false}], active: 0, dealer, shown: 1};
     if (isBlackjack(player) || isBlackjack(dealer)) {
       r.hands[0].done = true;
@@ -140,7 +164,10 @@ export default function Blackjack() {
 
   const hit = () =>
     update(h => {
-      const cards = [...h.cards, drawCard()];
+      const cards = [...h.cards, fate(drawCard, c => {
+        const n = handTotal([...h.cards, c]).total;
+        return n > 21 ? 0 : n;
+      })];
       const t = handTotal(cards).total;
       return {...h, cards, done: t >= 21};
     });

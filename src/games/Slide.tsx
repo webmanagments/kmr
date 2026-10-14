@@ -1,6 +1,7 @@
 import {useState} from 'react';
 import {useFlash, useSettler} from '../lib/hooks';
 import {HOUSE, fmtMult, money, rand, reducedMotion} from '../lib/util';
+import {fate} from '../lib/luck';
 import {useWallet, wallet} from '../lib/wallet';
 import {AutoRow, AutoSheet, useAutoBet} from '../ui/auto';
 import {BetAmount, ListStepper, PlayButton, ProfitOnWin, Readout} from '../ui/controls';
@@ -41,7 +42,7 @@ export default function Slide() {
     if (busy) return;
     const stake = betAmount;
     if (!wallet.debit(stake)) return;
-    const value = sample();
+    const value = fate(sample, v => (v >= target ? 1 : 0));
     const ok = value >= target;
     const payout = ok ? money(stake * target) : 0;
     const strip = Array.from({length: COUNT}, (_, i) => (i === WIN_AT ? value : sample()));

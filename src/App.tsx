@@ -1,20 +1,23 @@
 import {lazy, Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState} from 'react';
 import {CATEGORIES, GAMES, gameComponent, gameName, type Category, type GameDef} from './games/registry';
 import {GameArt} from './games/art';
+import {isAdmin, startGrants} from './lib/admin';
 import {leaderboardEnabled, startSync} from './lib/leaderboard';
+import {luckInfo, useLuck} from './lib/luck';
 import {profile, useProfile} from './lib/profile';
 import {sfx, unlockAudio} from './lib/sfx';
 import {focusDefault, focusEl, focusIsLost, installSpatialNav, setEdgeHandler} from './lib/spatial';
 import {DAILY_BONUS, setToaster, START_BALANCE, toast, useWallet, wallet} from './lib/wallet';
 import {fmtCoins, fmtMult} from './lib/util';
-import {Chart, Coin, Gift, Refresh, Speaker, Star, Trophy, WalletIcon} from './ui/icons';
+import {Chart, Clover, Coin, Crown, Gift, Refresh, Skull, Speaker, Star, Trophy, WalletIcon} from './ui/icons';
 import NameSetup from './ui/NameSetup';
 
 const Leaderboard = lazy(() => import('./ui/Leaderboard'));
+const Admin = lazy(() => import('./ui/Admin'));
 const PlayerModal = lazy(() => import('./ui/Leaderboard').then(m => ({default: m.PlayerModal})));
 
 interface Nav {
-  screen: 'lobby' | 'game' | 'leaders';
+  screen: 'lobby' | 'game' | 'leaders' | 'admin';
   id?: string;
   modal?: 'wallet' | 'player';
   player?: string;
@@ -23,6 +26,7 @@ interface Nav {
 const HOME: Nav = {screen: 'lobby'};
 
 startSync();
+startGrants();
 
 /** Apply focus on the next frame, then re-apply shortly after only if it was lost. */
 function settleFocus(apply: () => void) {
@@ -130,6 +134,13 @@ export default function App() {
     setNav(next);
   }, []);
 
+  const openAdmin = useCallback(() => {
+    if (navRef.current.screen === 'admin' || navRef.current.modal || !isAdmin()) return;
+    const next: Nav = {screen: 'admin'};
+    safeHistory(navRef.current.screen === 'lobby' ? 'push' : 'replace', next);
+    setNav(next);
+  }, []);
+
   const openModal = useCallback((modal: 'wallet' | 'player', player?: string) => {
     if (navRef.current.modal) return;
     modalOpener.current = document.activeElement as HTMLElement | null;
@@ -165,7 +176,11 @@ export default function App() {
       settleFocus(() => {
         if (!focusEl(document.querySelector<HTMLElement>('.lb-btn'))) focusDefault();
       });
-    } else if (nav.screen === 'leaders' && before.screen !== 'leaders') {
+    } else if (nav.screen === 'lobby' && before.screen === 'admin') {
+      settleFocus(() => {
+        if (!focusEl(document.querySelector<HTMLElement>('.admin-btn'))) focusDefault();
+      });
+    } else if ((nav.screen === 'leaders' || nav.screen === 'admin') && before.screen !== nav.screen) {
       settleFocus(() => focusDefault());
     }
   }, [nav]);
@@ -198,14 +213,21 @@ export default function App() {
   return (
     <div className="app">
       <TopBar
-        title={inGame ? gameName(nav.id!) : nav.screen === 'leaders' ? 'Leaderboard' : null}
+        title={inGame ? gameName(nav.id!) : nav.screen === 'leaders' ? 'Leaderboard' : nav.screen === 'admin' ? 'Admin' : null}
         gameId={inGame ? nav.id! : null}
         onWallet={openWallet}
         onLeaders={openLeaders}
+        onAdmin={openAdmin}
       />
       <main className="view" inert={nav.modal ? true : undefined}>
         {inGame ? (
           <GameScreen key={nav.id} id={nav.id!} />
+        ) : nav.screen === 'admin' && isAdmin(p) ? (
+          <Suspense fallback={<Loading label="Loading admin…" />}>
+            <FocusOnMount>
+              <Admin />
+            </FocusOnMount>
+          </Suspense>
         ) : nav.screen === 'leaders' ? (
           <Suspense fallback={<Loading label="Loading leaderboard…" />}>
             <FocusOnMount>
@@ -227,9 +249,17 @@ export default function App() {
   );
 }
 
-function TopBar({title, gameId, onWallet, onLeaders}: {title: string | null; gameId: string | null; onWallet: () => void; onLeaders: () => void}) {
+function TopBar({title, gameId, onWallet, onLeaders, onAdmin}: {title: string | null; gameId: string | null; onWallet: () => void; onLeaders: () => void; onAdmin: () => void}) {
   const {balance} = useWallet();
   const p = useProfile();
+  const lk = useLuck();
+  const [, tick] = useState(0);
+  useEffect(() => {
+    if (!lk.active) return;
+    const t = setInterval(() => tick(x => x + 1), 30_000);
+    return () => clearInterval(t);
+  }, [lk.active]);
+  const luckLeft = lk.active ? Math.max(1, Math.ceil((lk.until - Date.now()) / 60_000)) : 0;
   const [bump, setBump] = useState<'up' | 'down' | null>(null);
   const last = useRef(balance);
   useEffect(() => {
@@ -271,6 +301,17 @@ function TopBar({title, gameId, onWallet, onLeaders}: {title: string | null; gam
         )}
       </div>
       <div className="topbar-right">
+        {lk.active !== 0 && (
+          <span className={`luck-badge ${lk.active > 0 ? 'is-good' : 'is-bad'}`} aria-label={`${luckInfo(lk.active).name}, ${luckLeft} minutes left`}>
+            {lk.active > 0 ? <Clover size={13} /> : <Skull size={13} />}
+            {luckLeft >= 60 ? `${Math.round(luckLeft / 60)}h` : `${luckLeft}m`}
+          </span>
+        )}
+        {isAdmin(p) && (
+          <button type="button" className="icon-btn admin-btn is-admin" onClick={onAdmin} aria-label="Admin panel">
+            <Crown size={17} />
+          </button>
+        )}
         <button type="button" className="icon-btn is-gold lb-btn" onClick={onLeaders} aria-label="Leaderboard">
           <Trophy size={17} />
         </button>

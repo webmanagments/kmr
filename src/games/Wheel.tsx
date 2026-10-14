@@ -1,6 +1,7 @@
 import {useMemo, useRef, useState} from 'react';
 import {useFlash, useSettler} from '../lib/hooks';
 import {fmtMult, money, rand, randInt, reducedMotion} from '../lib/util';
+import {fate} from '../lib/luck';
 import {useWallet, wallet} from '../lib/wallet';
 import {AutoRow, AutoSheet, useAutoBet} from '../ui/auto';
 import {BetAmount, ListStepper, PlayButton, Segmented} from '../ui/controls';
@@ -60,7 +61,7 @@ export default function Wheel() {
     if (busy) return;
     const stake = betAmount;
     if (!wallet.debit(stake)) return;
-    const s = randInt(n);
+    const s = fate(() => randInt(n), i => layout[i]);
     const mult = layout[s];
     const payout = money(stake * mult);
     const jitter = (rand() - 0.5) * seg * 0.7;

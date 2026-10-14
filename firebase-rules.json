@@ -13,33 +13,101 @@
     },
     "board": {
       ".read": true,
-      ".indexOn": ["profit"],
+      ".indexOn": [
+        "profit"
+      ],
       "$name": {
         ".write": "newData.exists() && newData.parent().parent().child('stamp').child($name).child('t').val() === now && newData.parent().parent().child('stamp').child($name).child('k').val() === newData.parent().parent().child('owners').child($name).val()",
         ".validate": "newData.hasChildren(['name', 'profit', 'balance', 'wagered', 'bets', 'wins', 'bestWin', 'bestMult', 'resets', 'joined', 'updated']) && newData.child('updated').val() === now",
-        "name": { ".validate": "newData.isString() && newData.val().toLowerCase() === $name" },
-        "profit": { ".validate": "newData.isNumber()" },
-        "balance": { ".validate": "newData.isNumber()" },
-        "wagered": { ".validate": "newData.isNumber()" },
-        "bets": { ".validate": "newData.isNumber()" },
-        "wins": { ".validate": "newData.isNumber()" },
-        "bestWin": { ".validate": "newData.isNumber()" },
-        "bestMult": { ".validate": "newData.isNumber()" },
-        "resets": { ".validate": "newData.isNumber()" },
-        "joined": { ".validate": "newData.isNumber()" },
-        "updated": { ".validate": "newData.isNumber()" },
+        "name": {
+          ".validate": "newData.isString() && newData.val().toLowerCase() === $name"
+        },
+        "profit": {
+          ".validate": "newData.isNumber()"
+        },
+        "balance": {
+          ".validate": "newData.isNumber()"
+        },
+        "wagered": {
+          ".validate": "newData.isNumber()"
+        },
+        "bets": {
+          ".validate": "newData.isNumber()"
+        },
+        "wins": {
+          ".validate": "newData.isNumber()"
+        },
+        "bestWin": {
+          ".validate": "newData.isNumber()"
+        },
+        "bestMult": {
+          ".validate": "newData.isNumber()"
+        },
+        "resets": {
+          ".validate": "newData.isNumber()"
+        },
+        "joined": {
+          ".validate": "newData.isNumber()"
+        },
+        "updated": {
+          ".validate": "newData.isNumber()"
+        },
         "recent": {
           "$i": {
             ".validate": "$i.matches(/^[0-9]$/) && newData.hasChildren(['g', 'b', 'm', 'p', 't'])",
-            "g": { ".validate": "newData.isString() && newData.val().length <= 16" },
-            "b": { ".validate": "newData.isNumber()" },
-            "m": { ".validate": "newData.isNumber()" },
-            "p": { ".validate": "newData.isNumber()" },
-            "t": { ".validate": "newData.isNumber()" },
-            "$other": { ".validate": false }
+            "g": {
+              ".validate": "newData.isString() && newData.val().length <= 16"
+            },
+            "b": {
+              ".validate": "newData.isNumber()"
+            },
+            "m": {
+              ".validate": "newData.isNumber()"
+            },
+            "p": {
+              ".validate": "newData.isNumber()"
+            },
+            "t": {
+              ".validate": "newData.isNumber()"
+            },
+            "$other": {
+              ".validate": false
+            }
           }
         },
-        "$other": { ".validate": false }
+        "$other": {
+          ".validate": false
+        }
+      }
+    },
+    "grants": {
+      "$name": {
+        ".read": true,
+        "$id": {
+          ".write": "(newData.exists() && newData.parent().parent().parent().child('stamp').child('kmr').child('t').val() === now && newData.parent().parent().parent().child('stamp').child('kmr').child('k').val() === root.child('owners').child('kmr').val()) || (!newData.exists() && newData.parent().parent().parent().child('stamp').child($name).child('t').val() === now && newData.parent().parent().parent().child('stamp').child($name).child('k').val() === root.child('owners').child($name).val())",
+          ".validate": "$id.matches(/^[a-z0-9]{6,24}$/) && newData.hasChildren(['type', 't']) && newData.child('t').val() === now",
+          "type": {
+            ".validate": "newData.isString() && newData.val().matches(/^(add|remove|set|luck|reset|bonus)$/)"
+          },
+          "amount": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 1000000000000"
+          },
+          "level": {
+            ".validate": "newData.isNumber() && newData.val() >= -2 && newData.val() <= 3"
+          },
+          "mins": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 10080"
+          },
+          "by": {
+            ".validate": "newData.isString() && newData.val().length <= 12"
+          },
+          "t": {
+            ".validate": "newData.isNumber()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        }
       }
     }
   }

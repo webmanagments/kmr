@@ -3,6 +3,7 @@ import {useFlash, usePersistent, useSettler} from '../lib/hooks';
 import {sfx} from '../lib/sfx';
 import {focusDefault} from '../lib/spatial';
 import {fmtCoins, fmtMult, money, randInt, reducedMotion} from '../lib/util';
+import {fate} from '../lib/luck';
 import {wallet} from '../lib/wallet';
 import {AutoRow, AutoSheet, useAutoBet} from '../ui/auto';
 import {BetAmount, ListStepper, PlayButton, Readout, Segmented} from '../ui/controls';
@@ -126,8 +127,10 @@ export default function Snakes() {
   const roll = () => {
     const r = latest();
     if (r.phase !== 'playing' || busy) return;
-    const d1 = randInt(6) + 1;
-    const d2 = randInt(6) + 1;
+    const [d1, d2] = fate(
+      () => [randInt(6) + 1, randInt(6) + 1],
+      ([x, y]) => SNAKE_BOARDS[r.diff][(r.pos + x + y) % N],
+    );
     const steps = d1 + d2;
     const to = (r.pos + steps) % N;
     const v = SNAKE_BOARDS[r.diff][to];

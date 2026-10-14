@@ -24,6 +24,27 @@ bets, best multiplier and how many daily resets they've used. Pinch a player to 
 The leaderboard lives in a free Firebase Realtime Database (`src/config.ts`); its security rules are in
 [`firebase-rules.json`](firebase-rules.json). Note: coins are play money kept on each device, so the board is for fun, not anti-cheat.
 
+## Admin (the "kmr" account)
+
+The glasses that own the name **kmr** get a gold 👑 button in the top bar. It opens the admin panel:
+
+- **Pick a player** from the list (everyone on the leaderboard, you first) or **Type a name** on the on-screen keyboard.
+- **Coins:** choose 1K / 10K / 100K / 1M / 10M or type any amount on the keypad, then **Add**, **Remove** or **Set** their balance.
+- **Luck:** Cursed, Unlucky, Normal (clears it), Lucky, Very lucky or Godlike, for 5 min, 15 min, 1 hour, 6 hours or a day.
+  Luck works in all 28 games: lucky players win noticeably more often (a 50/50 coin flip lands about 57% / 65% / 84% of the time
+  for Lucky / Very lucky / Godlike, and about 42% / 35% for Unlucky / Cursed). Anyone with luck active sees a 🍀 or 💀 timer in their top bar.
+- **Give reset back** (their daily balance reset is ready again) and **Bonus ready** (their daily bonus can be claimed now).
+
+Everything works on yourself too, applied instantly. For other players a command is delivered within about 15 seconds
+while they have the casino open, or the next time they open it (the panel shows how many are waiting).
+Admin balance changes don't count toward leaderboard profit; only bets do.
+
+**Security:** commands are signed with the private key stored only on the glasses that own "kmr". The database rules refuse a
+command from anyone else, and only the receiving player can clear their own commands.
+
+**One-time setup:** the admin commands need the updated database rules. In the Firebase console open
+*Realtime Database → Rules*, replace everything with the contents of [`firebase-rules.json`](firebase-rules.json) and press **Publish**.
+
 **My Games:** press ★ in any game's top bar to pin it; the lobby's **My Games** tab shows your favorites and recently played games.
 **Sound:** synthesized sound effects for every game; mute them from Wallet.
 

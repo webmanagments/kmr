@@ -2,6 +2,7 @@ import {useEffect, useRef, useState} from 'react';
 import {useFlash, usePersistent} from '../lib/hooks';
 import {focusDefault} from '../lib/spatial';
 import {HOUSE, choose, fmtCoins, fmtMult, money, shuffle} from '../lib/util';
+import {fate} from '../lib/luck';
 import {useWallet, wallet} from '../lib/wallet';
 import {AutoRow, AutoSheet, useAutoBet} from '../ui/auto';
 import {BetAmount, ListStepper, PlayButton, Readout, Segmented} from '../ui/controls';
@@ -45,9 +46,11 @@ export default function Pump() {
   const start = () => {
     const stake = betAmount;
     if (!wallet.debit(stake)) return;
-    const order = shuffle(Array.from({length: STEPS}, (_, i) => i));
-    const pops = order.slice(0, POPS[round.diff]);
-    const popAt = Math.min(...pops) + 1;
+    // Luck: a later pop is better for the player.
+    const popAt = fate(
+      () => Math.min(...shuffle(Array.from({length: STEPS}, (_, i) => i)).slice(0, POPS[round.diff])) + 1,
+      v => v,
+    );
     setRound({phase: 'playing', diff: round.diff, stake, popAt, pumps: 0, popped: false});
   };
 

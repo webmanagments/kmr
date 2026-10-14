@@ -1,6 +1,7 @@
 import {useEffect, useRef, useState} from 'react';
 import {useFlash, useSettler} from '../lib/hooks';
 import {HOUSE, fmtMult, money, rand} from '../lib/util';
+import {fate} from '../lib/luck';
 import {useWallet, wallet} from '../lib/wallet';
 import {AutoRow, AutoSheet, useAutoBet} from '../ui/auto';
 import {BetAmount, ListStepper, PlayButton, ProfitOnWin, Readout} from '../ui/controls';
@@ -28,8 +29,10 @@ export default function Limbo() {
     if (busy) return;
     const stake = betAmount;
     if (!wallet.debit(stake)) return;
-    const r = rand();
-    const value = Math.min(1_000_000, Math.max(1, Math.floor((HOUSE / (1 - r)) * 100) / 100));
+    const value = fate(
+      () => Math.min(1_000_000, Math.max(1, Math.floor((HOUSE / (1 - rand())) * 100) / 100)),
+      v => (v >= target ? 1 : 0),
+    );
     const won = value >= target;
     const payout = won ? money(stake * target) : 0;
     setBusy(true);

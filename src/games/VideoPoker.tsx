@@ -2,6 +2,7 @@ import {useEffect, useRef} from 'react';
 import {useFlash, usePersistent, useSettler} from '../lib/hooks';
 import {focusDefault, focusEl} from '../lib/spatial';
 import {fmtMult, money, shuffle} from '../lib/util';
+import {fate} from '../lib/luck';
 import {useWallet, wallet} from '../lib/wallet';
 import {AutoRow, AutoSheet, useAutoBet} from '../ui/auto';
 import {BetAmount, PlayButton} from '../ui/controls';
@@ -99,15 +100,21 @@ export default function VideoPoker() {
   const deal = () => {
     const stake = betAmount;
     if (!wallet.debit(stake)) return;
-    const deck = newDeck();
+    const payOf = (h: CardT[]) => TABLE.find(t => t.id === evaluate(h))?.pay ?? 0;
+    const deck = fate(newDeck, dk => payOf(dk.slice(0, 5)));
     const hand = deck.splice(0, 5);
     setRound({phase: 'dealt', stake, deck, hand, held: [false, false, false, false, false], result: null});
   };
 
   const draw = (r: Round = round) => {
     if (r.phase !== 'dealt') return;
-    const deck = [...r.deck];
-    const hand = r.hand.map((c, i) => (r.held[i] ? c : deck.shift()!));
+    const replace = (dk: CardT[]) => r.hand.map((c, i) => (r.held[i] ? c : dk[r.held.slice(0, i).filter(x => !x).length]));
+    const deck = fate(
+      () => shuffle(r.deck),
+      dk => TABLE.find(t => t.id === evaluate(replace(dk)))?.pay ?? 0,
+    );
+    const hand = replace(deck);
+    deck.splice(0, r.held.filter(x => !x).length);
     const result = evaluate(hand);
     const pay = TABLE.find(t => t.id === result)?.pay ?? 0;
     const payout = money(r.stake * pay);

@@ -3,6 +3,7 @@ import {useFlash, usePersistent, useSettler} from '../lib/hooks';
 import {sfx} from '../lib/sfx';
 import {focusDefault, focusEl} from '../lib/spatial';
 import {fmtCoins, fmtMult, money, shuffle, weightedIndex} from '../lib/util';
+import {fate} from '../lib/luck';
 import {useWallet, wallet} from '../lib/wallet';
 import {AutoRow, AutoSheet, useAutoBet} from '../ui/auto';
 import {BetAmount, PlayButton, Readout} from '../ui/controls';
@@ -141,7 +142,7 @@ export default function Scratch() {
     if (playing || revealing) return;
     const stake = wallet.get().betAmount;
     if (!wallet.debit(stake)) return;
-    const {cells, win} = makeCard();
+    const {cells, win} = fate(makeCard, c => (c.win ? (SCRATCH_PRIZES.find(p => p.id === c.win)?.mult ?? 0) : 0));
     sfx('flip');
     setRound({phase: 'playing', stake, cells, revealed: cells.map(() => false), win});
   };

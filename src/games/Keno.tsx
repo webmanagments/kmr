@@ -1,6 +1,7 @@
 import {useEffect, useRef, useState} from 'react';
 import {useFlash, useSettler} from '../lib/hooks';
 import {HOUSE, choose, fmtMult, money, shuffle} from '../lib/util';
+import {fate} from '../lib/luck';
 import {useWallet, wallet} from '../lib/wallet';
 import {AutoRow, AutoSheet, useAutoBet} from '../ui/auto';
 import {BetAmount, PlayButton, Segmented} from '../ui/controls';
@@ -72,7 +73,10 @@ export default function Keno() {
     if (busy || !picks.length) return;
     const stake = betAmount;
     if (!wallet.debit(stake)) return;
-    const result = shuffle(Array.from({length: N}, (_, i) => i + 1)).slice(0, DRAWN);
+    const result = fate(
+      () => shuffle(Array.from({length: N}, (_, i) => i + 1)).slice(0, DRAWN),
+      res => table[picks.filter(p => res.includes(p)).length] ?? 0,
+    );
     const h = picks.filter(p => result.includes(p)).length;
     const mult = table[h] ?? 0;
     const payout = money(stake * mult);

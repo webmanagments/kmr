@@ -1,6 +1,7 @@
 import {useEffect, useRef, useState} from 'react';
 import {useFlash} from '../lib/hooks';
 import {fmtMult, money, rand} from '../lib/util';
+import {fate} from '../lib/luck';
 import {useWallet, wallet} from '../lib/wallet';
 import {AutoRow, AutoSheet, useAutoBet} from '../ui/auto';
 import {BetAmount, ListStepper, PlayButton, Segmented} from '../ui/controls';
@@ -166,7 +167,10 @@ export default function Plinko() {
     if (balls.current.length >= MAX_BALLS) return;
     const stake = betAmount;
     if (!wallet.debit(stake)) return;
-    const path = Array.from({length: rows}, () => (rand() < 0.5 ? 0 : 1));
+    const path = fate(
+      () => Array.from({length: rows}, () => (rand() < 0.5 ? 0 : 1)),
+      pth => mults[pth.reduce<number>((s, v) => s + v, 0)],
+    );
     const bin = path.reduce<number>((s, v) => s + v, 0);
     const b: Ball = {id: performance.now() + Math.random(), path, start: performance.now(), stake, mult: mults[bin], bin, done: false};
     const wasIdle = balls.current.length === 0;

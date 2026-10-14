@@ -1,6 +1,7 @@
 import {useMemo, useState} from 'react';
 import {useFlash, useSettler} from '../lib/hooks';
 import {HOUSE, fmtMult, money, reducedMotion, weightedIndex} from '../lib/util';
+import {fate} from '../lib/luck';
 import {useWallet, wallet} from '../lib/wallet';
 import {AutoRow, AutoSheet, useAutoBet} from '../ui/auto';
 import {BetAmount, PlayButton, Segmented} from '../ui/controls';
@@ -153,9 +154,10 @@ export default function Tarot() {
     if (busy) return;
     const stake = wallet.get().betAmount;
     if (!wallet.debit(stake)) return;
-    const li = weightedIndex(def.side.map(s => s[1]));
-    const ri = weightedIndex(def.side.map(s => s[1]));
-    const mi = weightedIndex(majorP);
+    const [li, ri, mi] = fate(
+      () => [weightedIndex(def.side.map(s => s[1])), weightedIndex(def.side.map(s => s[1])), weightedIndex(majorP)],
+      ([a, b, c]) => def.side[a][0] * def.side[b][0] * def.major[c],
+    );
     const d: Draw = {l: def.side[li][0], r: def.side[ri][0], m: def.major[mi], li, ri, mi};
     const mult = Math.round(d.l * d.m * d.r * 100) / 100;
     const payout = money(stake * mult);

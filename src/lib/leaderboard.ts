@@ -43,7 +43,7 @@ function dbUrl(): string {
 
 export const leaderboardEnabled = () => dbUrl() !== '';
 
-const TIMESTAMP = {'.sv': 'timestamp'};
+export const TIMESTAMP = {'.sv': 'timestamp'};
 
 function entry(): Omit<BoardEntry, 'updated'> & {updated: typeof TIMESTAMP} {
   const w = wallet.get();
@@ -64,7 +64,7 @@ function entry(): Omit<BoardEntry, 'updated'> & {updated: typeof TIMESTAMP} {
   };
 }
 
-async function request(path: string, init?: RequestInit, timeout = 8000): Promise<Response> {
+export async function request(path: string, init?: RequestInit, timeout = 8000): Promise<Response> {
   const ctl = new AbortController();
   const timer = setTimeout(() => ctl.abort(), timeout);
   try {

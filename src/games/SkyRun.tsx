@@ -2,6 +2,7 @@ import {useEffect, useRef, useState} from 'react';
 import {useFlash} from '../lib/hooks';
 import {sfx} from '../lib/sfx';
 import {fmtCoins, fmtMult, money, rand, randInt, reducedMotion, weightedIndex} from '../lib/util';
+import {fate} from '../lib/luck';
 import {wallet} from '../lib/wallet';
 import {AutoRow, AutoSheet, useAutoBet} from '../ui/auto';
 import {BetAmount, PlayButton, Segmented} from '../ui/controls';
@@ -942,7 +943,7 @@ export default function SkyRun() {
     floaters.current = [];
     setTier(null);
     flight.current = {
-      plan: makePlan(S.seaY - 70),
+      plan: fate(() => makePlan(S.seaY - 70), p => (p.landed ? p.mult : 0)),
       stake,
       d: 0,
       cam: 0,

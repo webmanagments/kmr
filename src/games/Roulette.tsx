@@ -1,6 +1,7 @@
 import {useEffect, useRef, useState} from 'react';
 import {useFlash, useSettler} from '../lib/hooks';
 import {fmtCoins, money, randInt, reducedMotion} from '../lib/util';
+import {fate} from '../lib/luck';
 import {toast, useWallet, wallet} from '../lib/wallet';
 import {AutoRow, AutoSheet, useAutoBet} from '../ui/auto';
 import {BetAmount, PlayButton} from '../ui/controls';
@@ -74,7 +75,10 @@ export default function Roulette() {
   const spin = () => {
     if (busy || !bets.length) return;
     if (!wallet.debit(totalBet)) return;
-    const n = randInt(37);
+    const n = fate(
+      () => randInt(37),
+      x => bets.reduce((s, b) => s + b.amt * payoutFor(b.key, x), 0),
+    );
     const payout = money(bets.reduce((s, b) => s + b.amt * payoutFor(b.key, n), 0));
     setBusy(true);
     setResult(null);

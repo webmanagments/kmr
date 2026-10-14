@@ -3,6 +3,7 @@ import {useFlash, usePersistent, useSettler} from '../lib/hooks';
 import {sfx} from '../lib/sfx';
 import {focusDefault} from '../lib/spatial';
 import {HOUSE, fmtCoins, fmtMult, money, rand} from '../lib/util';
+import {fate} from '../lib/luck';
 import {wallet} from '../lib/wallet';
 import {AutoRow, AutoSheet, useAutoBet} from '../ui/auto';
 import {BetAmount, ListStepper, PlayButton, Readout, Segmented} from '../ui/controls';
@@ -184,12 +185,14 @@ export default function Chicken() {
     const stake = wallet.get().betAmount;
     if (!wallet.debit(stake)) return;
     // Decide now which lane (if any) gets you, so leaving mid-round can't change it.
-    let hitLane = 0;
-    for (let i = 1; i <= LANES; i++)
-      if (rand() < RISK[round.diff]) {
-        hitLane = i;
-        break;
-      }
+    // Luck: getting hit later (or never) is better for the player.
+    const hitLane = fate(
+      () => {
+        for (let i = 1; i <= LANES; i++) if (rand() < RISK[round.diff]) return i;
+        return 0;
+      },
+      v => (v === 0 ? LANES + 1 : v),
+    );
     setBrakeLane(0);
     setPop(null);
     setRound({phase: 'playing', diff: round.diff, stake, hops: 0, hitLane, cashed: false});

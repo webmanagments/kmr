@@ -1,6 +1,7 @@
 import {useMemo, useState} from 'react';
 import {useFlash, useSettler} from '../lib/hooks';
 import {HOUSE, fmtMult, money, rand, reducedMotion, weightedIndex} from '../lib/util';
+import {fate} from '../lib/luck';
 import {useWallet, wallet} from '../lib/wallet';
 import {AutoRow, AutoSheet, useAutoBet} from '../ui/auto';
 import {BetAmount, PlayButton, Segmented} from '../ui/controls';
@@ -83,7 +84,7 @@ export default function Cases() {
     if (busy) return;
     const stake = betAmount;
     if (!wallet.debit(stake)) return;
-    const idx = weightedIndex(weights);
+    const idx = fate(() => weightedIndex(weights), i => def.mults[i]);
     const mult = def.mults[idx];
     const payout = money(stake * mult);
     const items = Array.from({length: STRIP}, (_, i) => (i === WIN_AT ? mult : def.mults[weightedIndex(weights)]));

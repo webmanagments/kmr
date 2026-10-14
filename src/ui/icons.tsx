@@ -183,3 +183,45 @@ export function DiceIcon({size = 16, ...p}: P) {
     </svg>
   );
 }
+
+export function Crown({size = 16, ...p}: P) {
+  return (
+    <svg {...base(size, p)}>
+      <path d="M3 8l4.5 4L12 5l4.5 7L21 8l-2 10H5z" fill="currentColor" />
+      <rect x="5" y="19" width="14" height="2.4" rx="1" fill="currentColor" />
+    </svg>
+  );
+}
+
+export function Clover({size = 16, ...p}: P) {
+  return (
+    <svg {...base(size, p)}>
+      <g fill="currentColor">
+        <path d="M11.2 11.2C7.4 11 4.2 9.6 4.4 6.6 4.6 4.3 7.2 3.8 8.6 5.4c-.2-2.4 3-3.6 4.1-1.3 1 2.2-.3 4.9-1.5 7.1z" />
+        <path d="M12.8 11.2c3.8-.2 7-1.6 6.8-4.6-.2-2.3-2.8-2.8-4.2-1.2.2-2.4-3-3.6-4.1-1.3-1 2.2.3 4.9 1.5 7.1z" opacity=".9" />
+        <path d="M11.2 12.8c-3.8.2-7 1.6-6.8 4.6.2 2.3 2.8 2.8 4.2 1.2-.2 2.4 3 3.6 4.1 1.3 1-2.2-.3-4.9-1.5-7.1z" opacity=".9" />
+        <path d="M12.8 12.8c3.8.2 7 1.6 6.8 4.6-.2 2.3-2.8 2.8-4.2 1.2.2 2.4-3 3.6-4.1 1.3-1-2.2.3-4.9 1.5-7.1z" />
+      </g>
+    </svg>
+  );
+}
+
+export function Skull({size = 16, ...p}: P) {
+  return (
+    <svg {...base(size, p)}>
+      <path d="M12 3a8 8 0 0 0-8 8c0 2.6 1.2 4.4 3 5.6V20h10v-3.4c1.8-1.2 3-3 3-5.6a8 8 0 0 0-8-8z" fill="currentColor" />
+      <circle cx="9" cy="11.5" r="2" fill="#071119" />
+      <circle cx="15" cy="11.5" r="2" fill="#071119" />
+      <path d="M10 20v-2.4M14 20v-2.4" stroke="#071119" strokeWidth="1.4" />
+    </svg>
+  );
+}
+
+export function Keyboard({size = 16, ...p}: P) {
+  return (
+    <svg {...base(size, p)}>
+      <rect x="2.5" y="6" width="19" height="12" rx="2" fill="none" stroke="currentColor" strokeWidth="2" />
+      <path d="M6 10h1M9.5 10h1M13 10h1M16.5 10h1M7.5 14h9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  );
+}

@@ -1,0 +1,360 @@
+/* Admin panel: players on the left, commands on the right. */
+.admin {
+  height: 100%;
+  display: grid;
+  grid-template-columns: 172px minmax(0, 1fr);
+  gap: 10px;
+  padding: 10px 12px 10px 10px;
+  overflow: hidden;
+}
+
+.adm-players {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-height: 0;
+  padding: 10px 8px;
+  border-radius: 10px;
+  background: var(--s0);
+  box-shadow: inset 0 0 0 1px rgba(255, 197, 49, 0.18);
+}
+
+.adm-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 4px;
+  font-size: 14px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+
+.adm-typebtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  height: 36px;
+  border-radius: 8px;
+  background: var(--s2);
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.adm-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 3px;
+  margin: -3px;
+  scrollbar-width: none;
+}
+
+.adm-list::-webkit-scrollbar {
+  display: none;
+}
+
+.adm-row {
+  flex: none;
+  display: grid;
+  gap: 1px;
+  padding: 7px 10px;
+  border-radius: 8px;
+  background: var(--s1);
+  text-align: left;
+}
+
+.adm-row b {
+  overflow: hidden;
+  font-size: 14px;
+  font-weight: 900;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.adm-row small {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--faint);
+  font-variant-numeric: tabular-nums;
+}
+
+.adm-row.is-on {
+  background: linear-gradient(90deg, rgba(255, 197, 49, 0.22), rgba(255, 197, 49, 0.06));
+  box-shadow: inset 3px 0 0 var(--gold);
+}
+
+.adm-empty {
+  padding: 8px 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--faint);
+}
+
+.adm-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  min-width: 0;
+  min-height: 0;
+}
+
+.adm-target {
+  display: grid;
+  gap: 3px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: linear-gradient(120deg, rgba(255, 197, 49, 0.16), var(--s1) 55%);
+}
+
+.adm-who {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.adm-who b {
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: -0.01em;
+}
+
+.adm-chip {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--gold);
+  font-size: 11px;
+  font-weight: 900;
+  color: #3b2500;
+}
+
+.adm-chip.is-warn {
+  background: var(--s3);
+  color: var(--muted);
+}
+
+.adm-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2px 12px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.adm-meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-variant-numeric: tabular-nums;
+}
+
+.adm-meta em {
+  font-style: normal;
+  color: var(--faint);
+}
+
+.adm-sec {
+  display: grid;
+  gap: 6px;
+  padding: 9px 10px;
+  border-radius: 10px;
+  background: var(--s0);
+}
+
+.adm-label {
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+.adm-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.adm-chip-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 30px;
+  padding: 0 10px;
+  border-radius: 7px;
+  background: var(--s2);
+  font-size: 12.5px;
+  font-weight: 800;
+  color: var(--muted);
+}
+
+.adm-chip-btn.is-on {
+  background: var(--gold);
+  color: #3b2500;
+}
+
+.adm-chip-btn:disabled {
+  opacity: 0.35;
+}
+
+.adm-luck .luck-good:not(.is-on) svg {
+  color: var(--green);
+}
+
+.adm-luck .luck-bad:not(.is-on) svg {
+  color: var(--red);
+}
+
+.adm-luck .luck-good.is-on {
+  background: var(--green);
+  color: var(--green-ink);
+}
+
+.adm-luck .luck-bad.is-on {
+  background: var(--red);
+  color: #2b0008;
+}
+
+.adm-luck .luck-none.is-on {
+  background: var(--s4);
+  color: #fff;
+}
+
+.adm-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.adm-act {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 38px;
+  padding: 0 8px;
+  border-radius: 8px;
+  background: var(--s3);
+  font-size: 13px;
+  font-weight: 900;
+  color: #fff;
+  white-space: nowrap;
+}
+
+.adm-act.is-green {
+  background: var(--green);
+  color: var(--green-ink);
+}
+
+.adm-act.is-red {
+  background: var(--red);
+  color: #2b0008;
+}
+
+.adm-act:disabled {
+  opacity: 0.4;
+}
+
+.adm-wide {
+  width: 100%;
+}
+
+.adm-last {
+  margin: 0;
+  overflow: hidden;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--faint);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* Keyboard and keypad sheets */
+.adm-kb {
+  width: 470px;
+}
+
+.adm-pad {
+  width: 300px;
+}
+
+.adm-kb-field {
+  display: grid;
+  gap: 2px;
+  padding: 10px 14px;
+  border-radius: 9px;
+  background: var(--input);
+  box-shadow: inset 0 0 0 2px var(--s3);
+}
+
+.adm-kb-field span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 30px;
+  font-size: 24px;
+  font-weight: 900;
+}
+
+.adm-kb-field i {
+  font-style: normal;
+  color: var(--s4);
+}
+
+.adm-kb-field small {
+  font-size: 11.5px;
+  font-weight: 800;
+  color: var(--muted);
+}
+
+.adm-kb-matches {
+  display: flex;
+  gap: 6px;
+}
+
+.adm-keys {
+  display: grid;
+  gap: 5px;
+}
+
+.adm-krow {
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+}
+
+.adm-key {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 36px;
+  border-radius: 7px;
+  background: var(--s2);
+  font-size: 16px;
+  font-weight: 800;
+  color: #fff;
+}
+
+.adm-key.is-fn {
+  width: 50px;
+  background: var(--s3);
+}
+
+.adm-padkeys {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.adm-padkeys .adm-key {
+  width: auto;
+  height: 42px;
+  font-size: 18px;
+}

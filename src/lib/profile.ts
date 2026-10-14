@@ -76,6 +76,10 @@ export const profile = {
   resetReadyIn(): number {
     return Math.max(0, state.lastReset + RESET_COOLDOWN - Date.now());
   },
+  /** Admin: give back today's balance reset. */
+  adminResetReady() {
+    set({...state, lastReset: 0});
+  },
   noteReset() {
     set({...state, resets: state.resets + 1, lastReset: Date.now()});
   },

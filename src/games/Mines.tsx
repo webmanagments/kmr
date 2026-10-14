@@ -2,6 +2,7 @@ import {useEffect, useRef, useState} from 'react';
 import {useFlash, usePersistent} from '../lib/hooks';
 import {focusDefault, focusEl} from '../lib/spatial';
 import {HOUSE, choose, fmtCoins, fmtMult, money, randInt, shuffle} from '../lib/util';
+import {jinx, rescue} from '../lib/luck';
 import {useWallet, wallet} from '../lib/wallet';
 import {AutoRow, AutoSheet, useAutoBet} from '../ui/auto';
 import {BetAmount, ListStepper, PlayButton, Readout} from '../ui/controls';
@@ -71,12 +72,17 @@ export default function Mines() {
 
   const reveal = (i: number) => {
     if (!playing || round.revealed.includes(i)) return;
-    if (round.bombs.includes(i)) {
+    // Luck moves a mine before the tile flips (the board stays consistent: same number of mines).
+    let bombs = round.bombs;
+    const free = Array.from({length: 25}, (_, k) => k).filter(k => k !== i && !bombs.includes(k) && !round.revealed.includes(k));
+    if (bombs.includes(i) && free.length && rescue()) bombs = [...bombs.filter(b => b !== i), free[randInt(free.length)]];
+    else if (!bombs.includes(i) && bombs.length && jinx()) bombs = [...bombs.slice(1), i];
+    if (bombs.includes(i)) {
       wallet.settle('mines', round.stake, 0);
-      setRound({...round, phase: 'over', hit: i, revealed: [...round.revealed]});
+      setRound({...round, bombs, phase: 'over', hit: i, revealed: [...round.revealed]});
       return;
     }
-    const next = {...round, revealed: [...round.revealed, i]};
+    const next = {...round, bombs, revealed: [...round.revealed, i]};
     if (next.revealed.length === 25 - round.mines) {
       cashout(next);
       return;

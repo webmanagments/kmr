@@ -1,5 +1,6 @@
 import {useState} from 'react';
 import {baccaratTotal, baccaratValue, drawCard} from '../lib/cards';
+import {fate} from '../lib/luck';
 import {useFlash, useSettler} from '../lib/hooks';
 import {fmtCoins, money, reducedMotion} from '../lib/util';
 import {toast, useWallet, wallet} from '../lib/wallet';
@@ -82,13 +83,13 @@ export default function Baccarat() {
   const deal = () => {
     if (busy || !bets.length) return;
     if (!wallet.debit(total)) return;
-    const h = coup();
-    const payout = money(
+    const payFor = (winner: Spot) =>
       bets.reduce((s, b) => {
-        if (h.winner === 'tie' && b.spot !== 'tie') return s + b.amt; // player/banker push on a tie
-        return s + (b.spot === h.winner ? b.amt * PAYS[b.spot] : 0);
-      }, 0),
-    );
+        if (winner === 'tie' && b.spot !== 'tie') return s + b.amt; // player/banker push on a tie
+        return s + (b.spot === winner ? b.amt * PAYS[b.spot] : 0);
+      }, 0);
+    const h = fate(coup, c => payFor(c.winner));
+    const payout = money(payFor(h.winner));
     const stake = total;
     setHand(h);
     setShown(0);
