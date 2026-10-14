@@ -4,7 +4,9 @@
 import http from 'node:http';
 
 const port = Number(process.argv[2] ?? 9199);
-const db = {owners: {}, stamp: {}, board: {}, grants: {}, events: {}};
+const db = {owners: {}, stamp: {}, board: {}, grants: {}, events: {}, arcade: {}};
+// NO_ARCADE=1 acts like a database whose rules haven't been updated for the arcade boards yet.
+const NO_ARCADE = process.env.NO_ARCADE === '1';
 const ADMIN = 'kmr';
 const GRANT_TYPES = ['add', 'remove', 'set', 'luck', 'reset', 'bonus', 'prize'];
 const NAME = /^[a-z0-9_]{3,12}$/;
@@ -33,6 +35,11 @@ function check(updates) {
     }
     if (top === 'events') {
       if (rest.length) return 'bad event path';
+      continue;
+    }
+    if (top === 'arcade') {
+      if (NO_ARCADE) return 'arcade not allowed (rules not set up)';
+      if (rest.length !== 1) return 'bad arcade path';
       continue;
     }
     if (rest.length) return 'deep paths not used by the app';
@@ -77,6 +84,19 @@ function check(updates) {
     if (top === 'stamp') {
       if (!val || val.k !== owners[name] || val.t !== now) return 'stamp denied';
     }
+    if (top === 'arcade') {
+      const who = id;
+      const s = stamp[who];
+      if (!val) return 'arcade delete denied';
+      if (!s || s.t !== now || s.k !== owners[who]) return 'arcade denied';
+      if (!/^[a-z0-9_]{2,24}$/.test(name)) return 'bad game id';
+      if (!['name', 'best', 'updated'].every(k => k in val) || val.updated !== now) return 'arcade missing fields';
+      if (typeof val.name !== 'string' || val.name.toLowerCase() !== who) return 'arcade bad name';
+      if (typeof val.best !== 'number' || val.best < 0 || val.best > 1e8) return 'arcade bad best';
+      if ('games' in val && !(typeof val.games === 'number' && val.games >= 0)) return 'arcade bad games';
+      if ('skin' in val && !(typeof val.skin === 'string' && val.skin.length <= 16)) return 'arcade bad skin';
+      for (const [k, v] of Object.entries(val)) if (!['name', 'best', 'games', 'skin', 'updated'].includes(k) && !(typeof v === 'number' || (typeof v === 'string' && v.length <= 24))) return `arcade bad ${k}`;
+    }
     if (top === 'board') {
       if (!val) return 'delete denied';
       const s = stamp[name];
@@ -108,13 +128,18 @@ http
       db.board = {};
       db.grants = {};
       db.events = {};
+      db.arcade = {};
       return res.end('ok');
     }
     const url = new URL(req.url, 'http://x');
     const path = url.pathname.replace(/^\/|\.json$/g, '');
     if (req.method === 'GET') {
       const parts = path.split('/').filter(Boolean);
-      if (parts[0] !== 'board' && parts[0] !== 'grants' && parts[0] !== 'events' && parts[0] !== '__all') {
+      if (NO_ARCADE && parts[0] === 'arcade') {
+        res.statusCode = 401;
+        return res.end(JSON.stringify({error: 'Permission denied'}));
+      }
+      if (parts[0] !== 'board' && parts[0] !== 'grants' && parts[0] !== 'events' && parts[0] !== 'arcade' && parts[0] !== '__all') {
         res.statusCode = 401;
         return res.end(JSON.stringify({error: 'Permission denied'}));
       }
@@ -139,6 +164,9 @@ http
             if (val === null) delete db.grants[name][id];
             else db.grants[name][id] = val;
             if (!Object.keys(db.grants[name]).length) delete db.grants[name];
+          } else if (top === 'arcade') {
+            db.arcade[name] ??= {};
+            db.arcade[name][id] = val;
           } else if (val === null) delete db[top][name];
           else db[top][name] = val;
         }

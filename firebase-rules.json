@@ -180,6 +180,36 @@
           ".validate": false
         }
       }
+    },
+    "arcade": {
+      ".read": true,
+      "$game": {
+        ".indexOn": [
+          "best"
+        ],
+        "$name": {
+          ".write": "newData.exists() && newData.parent().parent().parent().child('stamp').child($name).child('t').val() === now && newData.parent().parent().parent().child('stamp').child($name).child('k').val() === newData.parent().parent().parent().child('owners').child($name).val()",
+          ".validate": "$game.matches(/^[a-z0-9_]{2,24}$/) && newData.hasChildren(['name', 'best', 'updated']) && newData.child('updated').val() === now",
+          "name": {
+            ".validate": "newData.isString() && newData.val().toLowerCase() === $name"
+          },
+          "best": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100000000"
+          },
+          "games": {
+            ".validate": "newData.isNumber() && newData.val() >= 0"
+          },
+          "skin": {
+            ".validate": "newData.isString() && newData.val().length <= 16"
+          },
+          "updated": {
+            ".validate": "newData.isNumber()"
+          },
+          "$other": {
+            ".validate": "newData.isNumber() || (newData.isString() && newData.val().length <= 24)"
+          }
+        }
+      }
     }
   }
 }
