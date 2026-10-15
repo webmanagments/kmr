@@ -10,7 +10,8 @@ import {sfx, unlockAudio} from './lib/sfx';
 import {focusDefault, focusEl, focusIsLost, installSpatialNav, setEdgeHandler} from './lib/spatial';
 import {DAILY_BONUS, setToaster, START_BALANCE, toast, useWallet, wallet} from './lib/wallet';
 import {fmtCoins, fmtMult} from './lib/util';
-import {Chart, Clover, Coin, Crown, Gift, Refresh, Skull, Speaker, Star, Trophy, WalletIcon} from './ui/icons';
+import {Chart, Clover, Coin, Crown, Gift, LinkIcon, Refresh, Skull, Speaker, Star, Trophy, WalletIcon} from './ui/icons';
+import {LinkEnter, LinkShow} from './ui/Link';
 import NameSetup from './ui/NameSetup';
 
 const Leaderboard = lazy(() => import('./ui/Leaderboard'));
@@ -567,6 +568,13 @@ function WalletModal({onClose}: {onClose: () => void}) {
   const w = useWallet();
   const p = useProfile();
   const [armed, setArmed] = useState(false);
+  // Link name: share this name with another KMR app (or bring one in) with a one-time code.
+  const [link, setLink] = useState<null | 'menu' | 'show' | 'enter'>(null);
+  const linkTo = (v: null | 'menu' | 'show' | 'enter') => {
+    sfx('press');
+    setLink(v);
+    requestAnimationFrame(() => focusDefault());
+  };
   const [, force] = useState(0);
   useEffect(() => {
     const t = setInterval(() => force(x => x + 1), 30_000);
@@ -583,6 +591,10 @@ function WalletModal({onClose}: {onClose: () => void}) {
           <WalletIcon size={18} />
           <span>Wallet</span>
           <span className="modal-who">{p.name}</span>
+          <button type="button" className="modal-link" onClick={() => linkTo(link ? null : 'menu')} aria-pressed={!!link}>
+            <LinkIcon size={15} />
+            {link ? 'Wallet' : 'Link name'}
+          </button>
           <button
             type="button"
             className={`modal-sound${p.sound ? '' : ' is-off'}`}
@@ -600,80 +612,114 @@ function WalletModal({onClose}: {onClose: () => void}) {
             Done
           </button>
         </div>
-        <div className="wallet-balance">
-          <span className="wb-label">Balance</span>
-          <span className="wb-value">
-            <Coin size={22} />
-            {fmtCoins(w.balance)}
-          </span>
-        </div>
-        <div className="wallet-actions">
-          <button
-            type="button"
-            className="wa-btn tone-green"
-            disabled={wait > 0}
-            data-autofocus
-            onClick={() => {
-              if (wallet.claimBonus()) {
-                sfx('cash');
-                toast(`+${DAILY_BONUS.toLocaleString('en-US')} coins added`, 'win');
-              }
-            }}
-          >
-            <Gift size={16} />
-            <span>{wait > 0 ? `Bonus in ${fmtWait(wait)}` : `Claim +${DAILY_BONUS.toLocaleString('en-US')}`}</span>
-          </button>
-          <button
-            type="button"
-            className={`wa-btn ${armed ? 'tone-red' : ''}`}
-            disabled={resetWait > 0}
-            onClick={() => {
-              if (!armed) {
-                setArmed(true);
-                setTimeout(() => setArmed(false), 3000);
-                return;
-              }
-              wallet.reset();
-              profile.noteReset();
-              setArmed(false);
-              toast(`Balance reset to ${START_BALANCE.toLocaleString('en-US')}. Next reset in 24h.`, 'info');
-            }}
-          >
-            <Refresh size={16} />
-            <span>{resetWait > 0 ? `Next reset in ${fmtWait(resetWait)}` : armed ? 'Press again to reset' : `Reset to ${START_BALANCE.toLocaleString('en-US')} · 1 a day`}</span>
-          </button>
-        </div>
-        <div className="stat-grid">
-          <Stat icon={<Chart size={13} />} label="Bets" value={w.bets.toLocaleString('en-US')} />
-          <Stat label="Wagered" value={fmtCoins(w.wagered)} />
-          <Stat label="Profit" value={fmtCoins(w.profit)} tone={w.profit >= 0 ? 'green' : 'red'} />
-          <Stat icon={<Trophy size={13} />} label="Biggest win" value={fmtCoins(w.bestWin)} />
-          <Stat label="Best multi" value={w.bestMult ? fmtMult(w.bestMult) : '—'} />
-          <Stat label={`Win rate · ${p.resets} reset${p.resets === 1 ? '' : 's'}`} value={`${winRate}%`} />
-        </div>
-        <div className="recent">
-          <div className="recent-head">
-            <span>Game</span>
-            <span>Bet</span>
-            <span>Multi</span>
-            <span>Payout</span>
+        {link === 'menu' && (
+          <div className="link-menu">
+            <p className="link-note">
+              Play as <b>{p.name}</b> in every KMR app. Glasses keep each app separate, so link your name with a one-time code: get a code here and type it into the other app, or
+              the other way round.
+            </p>
+            <button type="button" className="link-btn is-primary" data-autofocus onClick={() => linkTo('show')}>
+              <LinkIcon size={17} /> Get a code
+            </button>
+            <button type="button" className="link-btn" onClick={() => linkTo('enter')}>
+              Enter a code
+            </button>
           </div>
-          {w.recent.length === 0 && <div className="recent-empty">No bets yet — pick a game.</div>}
-          {w.recent.slice(0, 4).map(r => (
-            <div key={r.id} className="recent-row">
-              <span>{gameName(r.game)}</span>
-              <span>{fmtCoins(r.bet)}</span>
-              <span>{fmtMult(r.mult)}</span>
-              <span className={r.payout > r.bet ? 'tone-green' : 'tone-muted'}>
-                {r.payout > r.bet ? '+' : ''}
-                {fmtCoins(r.payout - r.bet)}
+        )}
+        {link === 'show' && <LinkShow onClose={() => linkTo('menu')} />}
+        {link === 'enter' && (
+          <div className="link-screen" data-focus-scope="modal">
+            <LinkEnter
+              onDone={name => {
+                setLink(null);
+                toast(`You're now ${name} in this app`, 'win');
+                requestAnimationFrame(() => focusDefault());
+              }}
+              onCancel={() => linkTo('menu')}
+            />
+          </div>
+        )}
+        {!link && (
+          <>
+            <div className="wallet-balance">
+              <span className="wb-label">Balance</span>
+              <span className="wb-value">
+                <Coin size={22} />
+                {fmtCoins(w.balance)}
               </span>
             </div>
-          ))}
-        </div>
-        <p className="modal-note">
-          {leaderboardEnabled() ? 'Your stats update on the global leaderboard. ' : ''}Entertainment only. KMR Coins are play money with no cash value.
-        </p>
+            <div className="wallet-actions">
+              <button
+                type="button"
+                className="wa-btn tone-green"
+                disabled={wait > 0}
+                data-autofocus
+                onClick={() => {
+                  if (wallet.claimBonus()) {
+                    sfx('cash');
+                    toast(`+${DAILY_BONUS.toLocaleString('en-US')} coins added`, 'win');
+                  }
+                }}
+              >
+                <Gift size={16} />
+                <span>{wait > 0 ? `Bonus in ${fmtWait(wait)}` : `Claim +${DAILY_BONUS.toLocaleString('en-US')}`}</span>
+              </button>
+              <button
+                type="button"
+                className={`wa-btn ${armed ? 'tone-red' : ''}`}
+                disabled={resetWait > 0}
+                onClick={() => {
+                  if (!armed) {
+                    setArmed(true);
+                    setTimeout(() => setArmed(false), 3000);
+                    return;
+                  }
+                  wallet.reset();
+                  profile.noteReset();
+                  setArmed(false);
+                  toast(`Balance reset to ${START_BALANCE.toLocaleString('en-US')}. Next reset in 24h.`, 'info');
+                }}
+              >
+                <Refresh size={16} />
+                <span>
+                  {resetWait > 0 ? `Next reset in ${fmtWait(resetWait)}` : armed ? 'Press again to reset' : `Reset to ${START_BALANCE.toLocaleString('en-US')} · 1 a day`}
+                </span>
+              </button>
+            </div>
+            <div className="stat-grid">
+              <Stat icon={<Chart size={13} />} label="Bets" value={w.bets.toLocaleString('en-US')} />
+              <Stat label="Wagered" value={fmtCoins(w.wagered)} />
+              <Stat label="Profit" value={fmtCoins(w.profit)} tone={w.profit >= 0 ? 'green' : 'red'} />
+              <Stat icon={<Trophy size={13} />} label="Biggest win" value={fmtCoins(w.bestWin)} />
+              <Stat label="Best multi" value={w.bestMult ? fmtMult(w.bestMult) : '—'} />
+              <Stat label={`Win rate · ${p.resets} reset${p.resets === 1 ? '' : 's'}`} value={`${winRate}%`} />
+            </div>
+            <div className="recent">
+              <div className="recent-head">
+                <span>Game</span>
+                <span>Bet</span>
+                <span>Multi</span>
+                <span>Payout</span>
+              </div>
+              {w.recent.length === 0 && <div className="recent-empty">No bets yet — pick a game.</div>}
+              {w.recent.slice(0, 4).map(r => (
+                <div key={r.id} className="recent-row">
+                  <span>{gameName(r.game)}</span>
+                  <span>{fmtCoins(r.bet)}</span>
+                  <span>{fmtMult(r.mult)}</span>
+                  <span className={r.payout > r.bet ? 'tone-green' : 'tone-muted'}>
+                    {r.payout > r.bet ? '+' : ''}
+                    {fmtCoins(r.payout - r.bet)}
+                  </span>
+                </div>
+              ))}
+            </div>
+            <p className="modal-note">
+              {leaderboardEnabled() ? 'Your stats update on the global leaderboard. ' : ''}
+              Entertainment only. KMR Coins are play money with no cash value.
+            </p>
+          </>
+        )}
       </div>
     </div>
   );

@@ -4,7 +4,8 @@
 import http from 'node:http';
 
 const port = Number(process.argv[2] ?? 9199);
-const db = {owners: {}, stamp: {}, board: {}, grants: {}, events: {}, arcade: {}};
+const db = {owners: {}, stamp: {}, board: {}, grants: {}, events: {}, arcade: {}, links: {}};
+const LINK_TTL = 600000;
 // NO_ARCADE=1 acts like a database whose rules haven't been updated for the arcade boards yet.
 const NO_ARCADE = process.env.NO_ARCADE === '1';
 const ADMIN = 'kmr';
@@ -35,6 +36,11 @@ function check(updates) {
     }
     if (top === 'events') {
       if (rest.length) return 'bad event path';
+      continue;
+    }
+    if (top === 'links') {
+      if (NO_ARCADE) return 'links not allowed (rules not set up)';
+      if (rest.length) return 'bad link path';
       continue;
     }
     if (top === 'arcade') {
@@ -84,6 +90,25 @@ function check(updates) {
     if (top === 'stamp') {
       if (!val || val.k !== owners[name] || val.t !== now) return 'stamp denied';
     }
+    if (top === 'links') {
+      const old = db.links[name];
+      const owns = who => {
+        const s = stamp[who];
+        return !!s && s.t === now && s.k === owners[who] && s.k !== undefined;
+      };
+      if (val === null) {
+        if (!old) return 'link missing';
+        if (!(old.t < now - LINK_TTL || owns(old.name))) return 'link delete denied';
+        continue;
+      }
+      if (old) return 'link exists';
+      if (typeof val.name !== 'string' || !owns(val.name)) return 'link create denied (not owner)';
+      if (!/^[0-9a-f]{32}$/.test(name)) return 'bad link id';
+      if (!['name', 'iv', 'ct', 't'].every(k => k in val) || val.t !== now) return 'link missing fields';
+      if (!NAME.test(val.name) || typeof val.iv !== 'string' || val.iv.length > 32 || typeof val.ct !== 'string' || val.ct.length > 300) return 'bad link';
+      for (const k of Object.keys(val)) if (!['name', 'iv', 'ct', 't'].includes(k)) return `link extra ${k}`;
+      continue;
+    }
     if (top === 'arcade') {
       const who = id;
       const s = stamp[who];
@@ -129,12 +154,26 @@ http
       db.grants = {};
       db.events = {};
       db.arcade = {};
+      db.links = {};
+      return res.end('ok');
+    }
+    if (req.method === 'POST' && req.url === '/__agelinks') {
+      for (const l of Object.values(db.links)) l.t -= LINK_TTL + 1000; // test hook: expire every code
       return res.end('ok');
     }
     const url = new URL(req.url, 'http://x');
     const path = url.pathname.replace(/^\/|\.json$/g, '');
     if (req.method === 'GET') {
       const parts = path.split('/').filter(Boolean);
+      if (parts[0] === 'links') {
+        const l = parts.length === 2 ? db.links[parts[1]] : undefined;
+        if (NO_ARCADE || !l || !(l.t > Date.now() - LINK_TTL)) {
+          res.statusCode = 401;
+          return res.end(JSON.stringify({error: 'Permission denied'}));
+        }
+        res.setHeader('Content-Type', 'application/json');
+        return res.end(JSON.stringify(l));
+      }
       if (NO_ARCADE && parts[0] === 'arcade') {
         res.statusCode = 401;
         return res.end(JSON.stringify({error: 'Permission denied'}));

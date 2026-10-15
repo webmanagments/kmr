@@ -1,0 +1,96 @@
+/* Link name: the code shown inside the wallet, and the full-screen code keyboard. */
+.link-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 6px 4px;
+  text-align: center;
+}
+.link-code {
+  font: 900 46px ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  letter-spacing: 0.1em;
+  color: var(--green);
+  text-shadow: 0 0 18px rgba(0, 231, 1, 0.35);
+}
+.link-code.is-expired {
+  color: var(--faint);
+  text-decoration: line-through;
+  text-shadow: none;
+}
+.link-note {
+  max-width: 440px;
+  margin: 0;
+  font-size: 14px;
+  font-weight: 650;
+  line-height: 1.4;
+  color: var(--muted);
+}
+.link-note b {
+  color: var(--text);
+}
+.link-note.is-bad {
+  color: var(--red);
+}
+.link-warn {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--gold);
+}
+.link-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  width: 100%;
+  margin-top: 6px;
+}
+.link-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 48px;
+  border-radius: 8px;
+  background: var(--s2);
+  font-size: 15px;
+  font-weight: 900;
+}
+.link-btn.is-primary {
+  background: var(--green);
+  color: var(--green-ink);
+}
+.link-btn:focus {
+  outline: 3px solid #fff;
+  outline-offset: 2px;
+}
+.link-btn:disabled {
+  opacity: 0.4;
+}
+.link-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 4px 6px;
+}
+.link-menu .link-note {
+  margin-bottom: 4px;
+}
+.modal-link {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: var(--r);
+  background: var(--s2);
+  font-weight: 800;
+  font-size: 12.5px;
+  color: var(--text);
+}
+.link-screen {
+  position: absolute;
+  inset: 0;
+  z-index: 60;
+  background: var(--bg);
+}

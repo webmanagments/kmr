@@ -1,0 +1,1 @@
+import{ct as e}from"./icons-BemqgLQP.js";var t=()=>({rank:e(13)+1,suit:e(4)}),n=e=>e.rank>=10?10:e.rank;function r(e){let t=0,r=0;for(let i of e)t+=n(i),i.rank===1&&r++;return r&&t+10<=21?{total:t+10,soft:!0}:{total:t,soft:!1}}var i=e=>e.length===2&&r(e).total===21,a=e=>e.rank>=10?0:e.rank,o=e=>e.reduce((e,t)=>e+a(t),0)%10;export{i as a,r as i,a as n,t as r,o as t};

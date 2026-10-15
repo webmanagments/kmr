@@ -94,7 +94,7 @@ const forged = await fetch(`${DB}/.json`, {
 });
 check('Another device cannot overwrite the name', forged.status === 401);
 // B takes a random name instead.
-await pressKey(B.page, 'Random name');
+await pressKey(B.page, 'Random');
 await B.page.waitForTimeout(700);
 await pressKey(B.page, 'Start playing');
 await B.page.waitForSelector('.lobby', {timeout: 5000}).catch(() => {});

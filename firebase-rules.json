@@ -210,6 +210,28 @@
           }
         }
       }
+    },
+    "links": {
+      "$id": {
+        ".read": "data.exists() && data.child('t').val() > now - 600000",
+        ".write": "(!data.exists() && newData.exists() && newData.parent().parent().child('stamp').child(newData.child('name').val()).child('t').val() === now && newData.parent().parent().child('stamp').child(newData.child('name').val()).child('k').val() === newData.parent().parent().child('owners').child(newData.child('name').val()).val()) || (data.exists() && !newData.exists() && (data.child('t').val() < now - 600000 || (newData.parent().parent().child('stamp').child(data.child('name').val()).child('t').val() === now && newData.parent().parent().child('stamp').child(data.child('name').val()).child('k').val() === newData.parent().parent().child('owners').child(data.child('name').val()).val())))",
+        ".validate": "$id.matches(/^[0-9a-f]{32}$/) && newData.hasChildren(['name', 'iv', 'ct', 't']) && newData.child('t').val() === now",
+        "name": {
+          ".validate": "newData.isString() && newData.val().matches(/^[a-z0-9_]{3,12}$/)"
+        },
+        "iv": {
+          ".validate": "newData.isString() && newData.val().length <= 32"
+        },
+        "ct": {
+          ".validate": "newData.isString() && newData.val().length <= 300"
+        },
+        "t": {
+          ".validate": "newData.isNumber()"
+        },
+        "$other": {
+          ".validate": false
+        }
+      }
     }
   }
 }
